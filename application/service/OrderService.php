@@ -120,6 +120,7 @@ class OrderService
                 'payment'       => $payment[0]['payment'],
                 'respond'       => '/index/order/respond',
                 'notify'        => '/api/ordernotify/notify',
+                'refundnotify'        => '/api/ordernotify/refundnotify',
             ];
             $ret = PaymentService::PaymentEntranceCreated($payment_params);
             if($ret['code'] != 0)
@@ -153,6 +154,7 @@ class OrderService
             'total_price'   => $order['total_price'],
             'client_type'   => $order['client_type'],
             'notify_url'    => $url.'_notify.php',
+            'refund_notify_url'    => $url.'_refundnotify.php',
             'call_back_url' => $call_back_url,
             'redirect_url'  => MyUrl('index/order/detail', ['id'=>$order['id']]),
             'site_name'     => MyC('home_site_name', 'ShopXO', true),
@@ -1680,6 +1682,36 @@ class OrderService
             return DataReturn('支付成功', 0, ['url'=>MyUrl('index/order/detail', ['id'=>$order['id']])]);
         }
         return DataReturn('支付中', -300);
+    }
+
+    /**
+     * 退款异步处理
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-09-28
+     * @desc    description
+     * @param   [array]          $params [输入参数]
+     */
+    public static function RefundNotify($params = [])
+    {
+        // 支付方式
+        $payment = PaymentService::PaymentList(['where'=>['payment'=>PAYMENT_TYPE]]);
+        if(empty($payment[0]))
+        {
+            return DataReturn('支付方式有误', -1);
+        }
+
+        // 支付数据校验
+        $pay_name = 'payment\\'.PAYMENT_TYPE;
+        $ret = (new $pay_name($payment[0]['config']))->RefundNotify(array_merge(input('get.'), input('post.')));
+        if(!isset($ret['code']) || $ret['code'] != 0 || $ret['code'] != 10001)
+        {
+            return $ret;
+        }
+        //更新退款日志
+        RefundLogService::RefundLogUpdate($ret['data'])
+        return $ret;
     }
 
 }

@@ -747,7 +747,7 @@ class OrderAftersaleService
             $refund = DataReturn('退款成功', 0);
         }
 
-        // 退款成功
+        // 退款成功-提交成功
         if(isset($refund['code']) && $refund['code'] != 0)
         {
             return $refund;
@@ -910,6 +910,9 @@ class OrderAftersaleService
         }
 
         // 操作退款
+        // 回调地址
+        $url = __MY_URL__.'payment_order_'.strtolower($payment[0]['payment']);
+
         $pay_name = 'payment\\'.$pay_log['payment'];
         $pay_params = [
             'order_id'          => $order['id'],
@@ -919,8 +922,10 @@ class OrderAftersaleService
             'refund_price'      => $aftersale['price'],
             'client_type'       => $order['client_type'],
             'refund_reason'     => $order['order_no'].'订单退款'.$aftersale['price'].'元',
+            'refund_notify_url'    => $url.'_refundnotify.php',
         ];
         $ret = (new $pay_name($payment[0]['config']))->Refund($pay_params);
+        
         if(!isset($ret['code']))
         {
             return DataReturn('支付插件退款处理有误', -1);

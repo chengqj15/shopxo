@@ -44,7 +44,24 @@ class OrderNotify extends Common
     public function Notify()
     {
         $ret = OrderService::Notify($this->data_request);
-        if($ret['code'] == 0)
+        if($ret['code'] == 0 ||  $ret['code'] == 10001)
+        {
+            $this->SuccessReturn();
+        }
+        $this->ErrorReturn();
+    }
+
+    /**
+     * [Notify 支付异步处理]
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  1.0.0
+     * @datetime 2018-03-04T14:35:38+0800
+     */
+    public function RefundNotify()
+    {
+        $ret = OrderService::RefundNotify($this->data_request);
+        if($ret['code'] == 0 ||  $ret['code'] == 10001)
         {
             $this->SuccessReturn();
         }

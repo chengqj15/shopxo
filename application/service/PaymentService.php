@@ -730,6 +730,28 @@ require './public/index.php';
 ?>
 php;
 
+// 退款
+$refundnotify=<<<php
+<?php
+
+/**
+ * {$v['desc']}退款异步入口
+ */
+
+// 默认绑定模块
+\$_GET['s'] = '{$params["refundnotify"]}';
+
+// 支付模块标记
+define('PAYMENT_TYPE', '{$params["payment"]}');
+
+// 根目录入口
+define('IS_ROOT_ACCESS', true);
+
+// 引入公共入口文件
+require './public/index.php';
+?>
+php;
+
 // 同步
 $respond=<<<php
 <?php
@@ -773,6 +795,25 @@ require __DIR__.'/index.php';
 ?>
 php;
 
+// 退款
+$refundnotify=<<<php
+<?php
+
+/**
+ * {$v['desc']}退款异步入口
+ */
+
+// 默认绑定模块
+\$_GET['s'] = '{$params["refundnotify"]}';
+
+// 支付模块标记
+define('PAYMENT_TYPE', '{$params["payment"]}');
+
+// 引入入口文件
+require __DIR__.'/index.php';
+?>
+php;
+
 // 同步
 $respond=<<<php
 <?php
@@ -799,6 +840,8 @@ php;
             if(!in_array($params['payment'], $not_notify))
             {
                 @file_put_contents(self::$dir_root_path.'payment_'.$business_name.'_'.strtolower($params['payment']).'_notify.php', $notify);
+
+                @file_put_contents(self::$dir_root_path.'payment_'.$business_name.'_'.strtolower($params['payment']).'_refundnotify.php', $refundnotify);
             }
         }
 
@@ -838,6 +881,10 @@ php;
         foreach($business_all as $v)
         {
             $business_name = strtolower($v['name']);
+            if(file_exists(self::$dir_root_path.'payment_'.$business_name.'_'.$payment.'_refundnotify.php'))
+            {
+                @unlink(self::$dir_root_path.'payment_'.$business_name.'_'.$payment.'_refundnotify.php');
+            }
             if(file_exists(self::$dir_root_path.'payment_'.$business_name.'_'.$payment.'_notify.php'))
             {
                 @unlink(self::$dir_root_path.'payment_'.$business_name.'_'.$payment.'_notify.php');
@@ -875,6 +922,10 @@ php;
             if(!file_exists(self::$dir_root_path.'payment_'.strtolower($name).'_'.strtolower($payment).'_notify.php'))
             {
                 return DataReturn('支付通知入口文件不存在，请联系管理员处理', -10);
+            }
+            if(!file_exists(self::$dir_root_path.'payment_'.strtolower($name).'_'.strtolower($payment).'_refundnotify.php'))
+            {
+                return DataReturn('退款通知入口文件不存在，请联系管理员处理', -10);
             }
         }
         return DataReturn('校验成功', 0);

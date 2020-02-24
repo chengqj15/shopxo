@@ -63,6 +63,27 @@ class RefundLogService
     }
 
     /**
+     * 退款日志更新
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  1.0.0
+     * @datetime 2019-05-07T00:57:36+0800
+     * @param   [string]            $old_trade_no       [支付平台交易号]
+     * @param   [string]            $new_trade_no     [支付平台用户帐号]
+     * @param   [float]             $refund_price   [退款金额]
+     * @return  [boolean]                           [成功true, 失败false]
+     */
+    public static function RefundLogUpdate($params = [])
+    {
+        $data = [
+            'trade_no'          => isset($params['new_trade_no']) ? $params['new_trade_no'] : '',
+            'msg'               => isset($params['msg']) ? $params['msg'] : '',
+            'refund_price'      => isset($params['refund_price']) ? PriceNumberFormat($params['refund_price']) : 0.00
+        ];
+        return Db::name('RefundLog')->where('trade_no', $params['old_trade_no']).update($data) > 0;
+    }
+
+    /**
      * 获取退款日志类型
      * @author   Devil
      * @blog     http://gong.gg/
