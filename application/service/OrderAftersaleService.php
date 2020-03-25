@@ -922,7 +922,7 @@ class OrderAftersaleService
             'refund_price'      => $aftersale['price'],
             'client_type'       => $order['client_type'],
             'refund_reason'     => $order['order_no'].'订单退款'.$aftersale['price'].'元',
-            'refund_notify_url'    => $url.'_refundnotify.php',
+            'refund_notify_url' => $url.'_refundnotify.php',
         ];
         $ret = (new $pay_name($payment[0]['config']))->Refund($pay_params);
         

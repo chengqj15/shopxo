@@ -1710,7 +1710,7 @@ class OrderService
             return $ret;
         }
         //更新退款日志
-        RefundLogService::RefundLogUpdate($ret['data'])
+        RefundLogService::RefundLogUpdate($ret['data']);
         return $ret;
     }
 

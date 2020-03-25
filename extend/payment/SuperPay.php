@@ -521,22 +521,23 @@ class SuperPay
             'charset'           => 'UTF-8',
             'sign_type'         => 'MD5',
             'version'           => '1.0',
-            'call_back_ur'      => $params['refund_notify_url'],
-            'mch_order_no'      => $params['order_no'],
+            'call_back_url'      => $params['refund_notify_url'],
+            'mch_order_no'      => $params['order_no'].GetNumberCode(6),
             'orig_mch_order_no' => $params['order_no'],
             'refund_amount'     => strval($params['refund_price']),
             'refund_note'       => $refund_reason,
         ];
         $data['sign'] = $this->GetSign($data);
+        Log::write("superpay refund request: ". json_encode($data));
 
         // 请求接口处理
-        $result = $this->json_decode($this->HttpRequest($this->superpay_order_url, $data, true), true);
+        $result = json_decode($this->HttpRequest($this->superpay_order_url, $data), true);
         if(isset($result['status']) && $result['status'] == 'T' && isset($result['data']['result']) && $result['data']['result'] == true)
         {
             // 统一返回格式
             $data = [
                 'out_trade_no'  => $params['order_no'],
-                'trade_no'      => $params['order_no'],
+                'trade_no'      => $data['mch_order_no'],
                 'buyer_user'    => '',
                 'refund_price'  => $params['refund_price'],
                 'return_params' => isset($result['message']) ? $result['message'] : '',
