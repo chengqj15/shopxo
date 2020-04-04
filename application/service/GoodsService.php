@@ -15,6 +15,7 @@ use think\facade\Hook;
 use app\service\ResourcesService;
 use app\service\BrandService;
 use app\service\RegionService;
+use think\facade\Log;
 
 /**
  * 商品服务层
@@ -999,6 +1000,45 @@ class GoodsService
             }
         }
         return $where;
+    }
+
+    /**
+     * 商品保存
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  1.0.0
+     * @datetime 2018-12-10T01:02:11+0800
+     * @param    [array]          $params [输入参数]
+     */
+    public static function BatchImport($params = [])
+    {
+        Log::write('BatchImport params:' . json_encode($params));
+        $filepath = self::GetFormGoodsExcelParams($params);
+        Log::write('BatchImport filepath:' . $filepath);
+        // Excel驱动导出数据
+        $excel = new \base\Excel(array('filename'=>'goods', 'title'=>'goods', 'msg'=>'没有相关数据'));
+        $result = $excel->Import($filepath);
+        Log::write('BatchImport excel:' . json_encode($result));
+    }
+
+    /**
+     * 获取商品相册
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-07-10
+     * @desc    description
+     * @param   [array]          $params [输入参数]
+     * @return  [array]                  [一维数组但图片地址]
+     */
+    private static function GetFormGoodsExcelParams($params = [])
+    {
+        if(empty($params['excel']))
+        {
+            return DataReturn('请上传excel文件', -1);
+        }
+
+        return DataReturn('success', 0, ResourcesService::AttachmentPathHandle($params['excel']));
     }
 
     /**

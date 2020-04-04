@@ -1,0 +1,69 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+	<div class="content">
+		<!-- form start -->
+		<form class="am-form form-validation view-save" action="{{:MyUrl('admin/goods/batchimport')}}" method="POST" request-type="ajax-url" request-value="{{:MyUrl('admin/goods/index', $params)}}" enctype="multipart/form-data">
+			<legend>
+				<span class="am-text-default">
+					导入
+				</span>
+				<a href="{{:MyUrl('admin/goods/index', $params)}}" class="am-fr am-text-sm am-margin-top-xs am-icon-mail-reply"> 返回</a>
+			</legend>
+
+			<!-- 基础信息 -->
+			<div id="goods-nav-base" class="division-block">
+				<label class="block nav-detail-title">基础信息</label>
+
+				<div class="am-form-group">
+					<label>商品分类*</label>
+					<br />
+					<select name="category_id" class="am-radius chosen-select" multiple="multiple" minchecked="1" data-placeholder="请选择..." data-validation-message="请至少选择一个商品分类" required>
+						{{if !empty($goods_category_list)}}
+							{{foreach $goods_category_list as $v}}
+								<option value="{{$v.id}}" {{if !empty($data['category_ids']) and in_array($v['id'], $data['category_ids'])}}selected{{/if}}>一级 - {{$v.name}}</option>
+								{{if !empty($v['items'])}}
+									{{foreach $v.items as $vs}}
+										<option style="padding-left: 30px;" value="{{$vs.id}}" {{if !empty($data['category_ids']) and in_array($vs['id'], $data['category_ids'])}}selected{{/if}}>二级-{{$vs.name}}</option>
+										{{if !empty($vs['items'])}}
+											{{foreach $vs.items as $vss}}
+												<option style="padding-left: 60px;" value="{{$vss.id}}" {{if !empty($data['category_ids']) and in_array($vss['id'], $data['category_ids'])}}selected{{/if}}>三级-{{$vss.name}}</option>
+											{{/foreach}}
+										{{/if}}
+									{{/foreach}}
+								{{/if}}
+							{{/foreach}}
+						{{/if}}
+					</select>
+				</div>
+
+				<div class="am-form-group am-form-file">
+					<label class="block">excel文件</label>
+					<ul class="plug-file-upload-view goods-import-view" data-form-name="excel" data-max-number="1" data-dialog-type="file">
+						{{if !empty($data['excel'])}}
+							<li>
+								<input type="text" name="excel" value="{{$data.excel}}" />
+								<i>×</i>
+							</li>
+						{{/if}}
+					</ul>
+					<div class="plug-file-upload-submit" data-view-tag="ul.goods-import-view">+上传excel文件</div>
+				</div>
+				
+			</div>
+
+			<div class="am-form-group am-form-group-refreshing">
+				<input type="hidden" name="id" {{if !empty($data)}} value="{{$data.id}}"{{/if}} />
+				<button type="submit" class="am-btn am-btn-primary am-radius btn-loading-example am-btn-sm am-btn-block" data-am-loading="{loadingText:'处理中...'}">保存</button>
+			</div>
+		</form>
+        <!-- form end -->
+	</div>
+</div>
+<!-- right content end  -->
+
+
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

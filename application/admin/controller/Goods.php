@@ -192,6 +192,39 @@ class Goods extends Common
 	}
 
 	/**
+	 * [SaveInfo 商品添加/编辑页面]
+	 * @author   Devil
+	 * @blog     http://gong.gg/
+	 * @version  0.0.1
+	 * @datetime 2016-12-14T21:37:02+0800
+	 */
+	public function ImportInfo()
+	{
+		return $this->fetch();
+	}
+
+	/**
+	 * [Save 商品添加/编辑]
+	 * @author   Devil
+	 * @blog     http://gong.gg/
+	 * @version  0.0.1
+	 * @datetime 2016-12-14T21:37:02+0800
+	 */
+	public function BatchImport()
+	{
+		// 是否ajax
+		if(!IS_AJAX)
+		{
+			return $this->error('非法访问');
+		}
+
+		// 开始操作
+		$params = input('post.');
+		$params['admin'] = $this->admin;
+		return GoodsService::BatchImport($params);
+	}
+
+	/**
 	 * [Delete 商品删除]
 	 * @author   Devil
 	 * @blog     http://gong.gg/
