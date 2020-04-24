@@ -234,7 +234,9 @@ class Excel
 		}
 
 		// 取得文件基础数据
-		$reader = \PHPExcel_IOFactory::createReader('Excel5');
+		// 'Excel5'
+		$inputFileType = \PHPExcel_IOFactory::identify($file); 
+		$reader = \PHPExcel_IOFactory::createReader($inputFileType);
 		$excel = $reader->load($file);
 
 		// 取得总行数

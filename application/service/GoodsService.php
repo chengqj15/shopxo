@@ -1002,6 +1002,64 @@ class GoodsService
         return $where;
     }
 
+        /**
+     * 商品保存
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  1.0.0
+     * @datetime 2018-12-10T01:02:11+0800
+     * @param    [array]          $params [输入参数]
+     */
+    public static function BatchUpdate($params = [])
+    {
+        Log::write('BatchUpdate params:' . json_encode($params));
+        $goods_ids = [];
+        // 商品分类
+        if(!empty($params['category_id']) && $params['category_id'] > 0)
+        {
+            $category_ids = self::GoodsCategoryItemsIds([intval($params['category_id'])], 1);
+            $goods_ids = Db::name('GoodsCategoryJoin')->where(['category_id'=>$category_ids])->column('goods_id');
+        }else{
+            // all goods
+            $goods_ids = Db::name('Goods')->where(['is_delete_time'=>0])->column('id');
+        }
+        $data = [];
+        if(isset($params['inventory'])){
+            $data['inventory' ] = $params['inventory'];
+        }
+        if(isset($params['price'])){
+            $data['price'] = Db::raw('price*'.$params['price'].'/100');
+            $data['original_price'] = Db::raw('original_price*'.$params['price'].'/100');
+        }
+        $suc_count = 0;
+        if(!empty($goods_ids)){
+            Db::startTrans();
+
+            for($i = 0; $i < count($goods_ids); ++$i){
+                //update good spec base
+                Db::name('GoodsSpecBase')->where(['goods_id'=>$goods_ids[$i]])->update($data);
+                //update good
+                $ret = self::GoodsSaveBaseUpdate($params, $goods_ids[$i]);
+                if($ret['code'] != 0)
+                {
+                    // 回滚事务
+                    Log::write('batch update fail: id='. $goods_ids[$i]);
+                }
+                $suc_count += 1;
+                if($i % 20 == 19){
+                    Db::commit();
+                    Db::startTrans();
+                }
+            }
+            Db::commit();
+            Log::write('batch update end, 总商品数:' . count($goods_ids) . ' 成功数:' . $suc_count);
+        }else{
+            //
+            Log::write('batch update end, no goods found');
+        }
+        return DataReturn('操作成功. 总商品数:' . count($goods_ids) . ' 成功数:' . $suc_count, 0);
+    }
+
     /**
      * 商品保存
      * @author   Devil
@@ -1014,11 +1072,64 @@ class GoodsService
     {
         Log::write('BatchImport params:' . json_encode($params));
         $filepath = self::GetFormGoodsExcelParams($params);
-        Log::write('BatchImport filepath:' . $filepath);
+        if($filepath['code'] != 0)
+        {
+            return $filepath;
+        }
+        // Log::write('BatchImport filepath:' . json_encode($filepath));
         // Excel驱动导出数据
-        $excel = new \base\Excel(array('filename'=>'goods', 'title'=>'goods', 'msg'=>'没有相关数据'));
-        $result = $excel->Import($filepath);
-        Log::write('BatchImport excel:' . json_encode($result));
+        $excel = new \base\Excel(array('filename'=>'goods', 'title'=>lang('excel_good_title_list'), 'msg'=>'没有相关数据'));
+        $location ='/sites/shopxo/public' . $filepath['data'];
+        // Log::write('BatchImport location:' . $location);
+        $result = $excel->Import($location);
+        // Log::write('BatchImport excel:' . json_encode($result));
+
+        $default_number = 20;
+        $default_photo = "/static/upload/images/goods/2020/04/04/1585980833615248.png";
+
+        $i = 0;
+        $fail_count = 0;
+        for($i = 0; $i < count($result); ++$i)
+        {
+            if(empty($result[$i]['name']))
+            {
+                break;
+            }
+            $good_params = [
+                'title' => $result[$i]['name'],
+                'simple_desc' => '',
+                'model' => '',
+                'give_integral' => 0,
+                'buy_min_number' => 1,
+                'category_id' => $params['category_id'],
+                'inventory_unit' => 'pcs',
+                'is_deduction_inventory' => 1,
+                'is_shelves' => 1,
+                'brand_id' => 0,
+                'place_origin' => 0,
+                'home_recommended_images' => $default_photo,
+                'photo' => [
+                    $default_photo
+                ],
+                'specifications_price' => array($result[$i]['price']),
+                'specifications_number' => array($default_number),
+                'specifications_weight' => array(''),
+                'specifications_coding' => array(''),
+                'specifications_barcode' => array($result[$i]['barcode']),
+                'specifications_original_price' => array($result[$i]['orig_price']),
+                'specifications_extends' => array(''),
+            ];
+            $save_result = self::GoodsSave($good_params);
+            if($save_result['code'] != 0){
+                Log::write('import line failed: index=' . $i . ' data=' . json_encode($result[$i]) . ' result=' . json_encode($save_result));
+                $fail_count += 1;
+            }
+        }
+        Log::write('total line process: '. $i . ' fail:' . $fail_count);
+        if($fail_count > 0){
+            return DataReturn('部分导入失败， 失败行数：' . $fail_count, -1);
+        }
+        return DataReturn('操作成功. 行数:' . $i, 0);
     }
 
     /**
@@ -1051,6 +1162,7 @@ class GoodsService
      */
     public static function GoodsSave($params = [])
     {
+        Log::write('GoodsSave params:' . json_encode($params));
         // 请求参数
         $p = [
             [

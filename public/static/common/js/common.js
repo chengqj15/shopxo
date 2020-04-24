@@ -2087,8 +2087,8 @@ $(function()
 	                	// 是否直接赋值属性
 	                	if(i == 0 && is_attr != null)
 	                	{
-	                		$('form [name="'+form_name+'"]').val(result[i].src);
-	                		$tag.attr(is_attr, result[i].src);
+	                		$('form [name="'+form_name+'"]').val(result[i].url);
+	                		$tag.attr(is_attr, result[i].url);
 	                		break;
 	                	}
 
@@ -2101,8 +2101,8 @@ $(function()
 
 	                    var $tag = $($('body').attr('view-tag'));
 	                    var html = '<li>';
-	                        html += '<input type="text" name="'+form_name+'" value="'+result[i].src+'" />';
-	                        html += '<a href="'+result[i].src+'">'+result[i].src+'</a>';
+	                        html += '<input type="text" name="'+form_name+'" value="'+result[i].url+'" />';
+	                        html += '<a href="'+result[i].url+'">'+result[i].url+'</a>';
 	                        if(is_delete == 1)
 	                        {
 	                        	html += '<i>×</i>';

@@ -618,6 +618,7 @@ class BuyService
 
             // 数据处理
             $address = null;
+            $contact_address = null;
             $extraction_address = [];
 
             // 站点模式 - 用户收货地址（未选择则取默认地址）
@@ -651,21 +652,45 @@ class BuyService
                 {
                     $address = $extraction['data']['default'];
                 }
+                // 联系人
+                $address_params = [
+                    'user'  => $params['user'],
+                ];
+                if(!empty($params['contact_address']))
+                {
+                    $address_params['where'] = ['id' => $params['contact_address']];
+                }
+                $ads = UserService::UserDefaultAddress($address_params);
+                if(!empty($ads['data']))
+                {
+                    $contact_address = $ads['data'];
+                }
             }
 
             // 商品/基础信息
-            $total_price = empty($goods) ? 0 : array_sum(array_column($goods, 'total_price'));
+            $total_price = empty($goods) ? 0 : array_sum(array_column($goods, 'total_price')); 
+            // 添加服务费
+            $service_fee_ratio = MyC('common_order_service_fee_ratio', 0, true);
+            $service_fee_upper_limit = MyC('common_order_service_fee_upper_limit', 0, true);
+
+            $service_fee = min($total_price * $service_fee_ratio / 100, $service_fee_upper_limit);
+            $actual_price = $total_price + $service_fee;
+
+
             $base = [
                 // 总价
                 'total_price'           => $total_price,
 
                 // 订单实际支付金额(已减去优惠金额, 已加上增加金额)
-                'actual_price'          => $total_price,
+                'actual_price'          => $actual_price,
+
+                // 服务费
+                'service_fee'           => $service_fee,
 
                 // 优惠金额
                 'preferential_price'    => 0.00,
 
-                // 增加金额
+                // 运费
                 'increase_price'        => 0.00,
 
                 // 商品数量
@@ -679,6 +704,8 @@ class BuyService
 
                 // 默认地址
                 'address'               => $address,
+
+                'contact_address'       => $contact_address,
 
                 // 自提地址列表
                 'extraction_address'    => $extraction_address,
@@ -727,6 +754,7 @@ class BuyService
 
             // 返回数据再次处理，防止插件处理不够完善
             $result['base']['total_price'] = PriceNumberFormat($result['base']['total_price']);
+            $result['base']['service_fee'] = PriceNumberFormat($result['base']['service_fee']);
             $result['base']['actual_price'] = PriceNumberFormat($result['base']['actual_price']);
             $result['base']['preferential_price'] = PriceNumberFormat($result['base']['preferential_price']);
             $result['base']['increase_price'] = PriceNumberFormat($result['base']['increase_price']);
@@ -881,6 +909,8 @@ class BuyService
 
         // 销售型,自提点,销售+自提 地址处理
         $address = [];
+        $contact_address=[]
+        $target_date = ''
         if(in_array($site_model, [0,2]))
         {
             if(empty($buy['data']['base']['address']))
@@ -889,6 +919,8 @@ class BuyService
             } else {
                 $address = $buy['data']['base']['address'];
             }
+            $contact_address = $buy['data']['base']['contact_address'];
+            $target_date = isset($params['target_date']) ? $params['target_date'] : '';
         }
 
         // 订单主信息
@@ -901,6 +933,7 @@ class BuyService
             'increase_price'        => ($buy['data']['base']['increase_price'] <= 0.00) ? 0.00 : $buy['data']['base']['increase_price'],
             'price'                 => ($buy['data']['base']['total_price'] <= 0.00) ? 0.00 : $buy['data']['base']['total_price'],
             'total_price'           => ($buy['data']['base']['actual_price'] <= 0.00) ? 0.00 : $buy['data']['base']['actual_price'],
+            'service_fee'           => ($buy['data']['base']['service_fee'] <= 0.00) ? 0.00 : $buy['data']['base']['service_fee'],
             'extension_data'        => empty($buy['data']['extension_data']) ? '' : json_encode($buy['data']['extension_data']),
             'payment_id'            => isset($params['payment_id']) ? intval($params['payment_id']) : 0,
             'buy_number_count'      => array_sum(array_column($buy['data']['goods'], 'stock')),
@@ -966,7 +999,7 @@ class BuyService
                 // 添加订单(收货|取货)地址
                 if(!empty($address))
                 {
-                    $ret = self::OrderAddressInsert($order_id, $params['user']['id'], $address);
+                    $ret = self::OrderAddressInsert($order_id, $params['user']['id'], $address, $contact_address, $target_date);
                     if($ret['code'] != 0)
                     {
                         Db::rollback();
@@ -1222,7 +1255,7 @@ class BuyService
      * @param   [int]          $user_id  [用户id]
      * @param   [array]        $address  [地址]
      */
-    private static function OrderAddressInsert($order_id, $user_id, $address)
+    private static function OrderAddressInsert($order_id, $user_id, $address, $contact_address, $target_date)
     {
         // 坐标处理
         if(in_array(APPLICATION_CLIENT_TYPE, config('shopxo.coordinate_transformation')))
@@ -1247,6 +1280,10 @@ class BuyService
             'alias'         => isset($address['alias']) ? $address['alias'] : '',
             'name'          => isset($address['name']) ? $address['name'] : '',
             'tel'           => isset($address['tel']) ? $address['tel'] : '',
+            'contact_id'    => isset($contact_address['id']) ? intval($contact_address['id']) : 0, //联系人
+            'contact_name'  => isset($contact_address['name']) ? $contact_address['name'] : '', //联系人
+            'contact_tel'   => isset($contact_address['tel']) ? $contact_address['tel'] : '', //联系人
+            'target_date'   => isset($target_date) ? $target_date : '', //送货取货时间
             'province'      => isset($address['province']) ? intval($address['province']) : 0,
             'city'          => isset($address['city']) ? intval($address['city']) : 0,
             'county'        => isset($address['county']) ? intval($address['county']) : 0,

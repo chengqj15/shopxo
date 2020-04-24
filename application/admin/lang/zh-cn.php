@@ -126,5 +126,26 @@ return array(
                     'type' => 'string',
                 ],
         ],
+
+    // 用户excel导出标题列表
+    // Barcode条形码   代号  产品名称   原价    卖价
+    'excel_good_title_list'     =>  [
+            'barcode'      =>  [
+                    'name' => '条形码',
+                    'type' => 'string',
+                ],
+            'name'   =>  [
+                    'name' => '产品名字',
+                    'type' => 'string',
+                ],
+            'orig_price'=>   [
+                    'name' => '原价',
+                    'type' => 'string',
+                ],
+            'price'=>   [
+                    'name' => '卖价',
+                    'type' => 'string',
+                ]
+        ],
 );
 ?>

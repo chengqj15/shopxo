@@ -180,6 +180,79 @@ class Wechat
     }
 
     /**
+     * [SendSubscribeMessage 二维码创建]
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  1.0.0
+     * @datetime 2018-01-02T19:53:10+0800
+     * @param    [string]  $params['page']      [页面地址]
+     * @param    [string]  $params['scene']     [参数]
+     * @return   [string]                       [成功返回文件流, 失败则空]
+     */
+    public function SendSubscribeMessage($params)
+    {
+        // 请求参数
+        $p = [
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'touser',
+                'error_msg'         => 'touser不能为空',
+            ],
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'page',
+                'error_msg'         => 'page地址不能为空',
+            ],
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'template_id',
+                'error_msg'         => 'template_id不能为空',
+            ],
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'data',
+                'error_msg'         => 'data不能为空',
+            ],
+        ];
+        $ret = ParamsChecked($params, $p);
+        if($ret !== true)
+        {
+            return DataReturn($ret, -1);
+        }
+
+        // 获取access_token
+        $access_token = $this->GetMiniAccessToken();
+        if($access_token === false)
+        {
+            return DataReturn('access_token获取失败', -1);
+        }
+
+        // 获取二维码
+        $url = 'https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token='.$access_token;
+        $data = [
+            'touser'  => $params['touser'],
+            'template_id' => $params['template_id'],
+            'page' => $params['page'],
+            'miniprogram_state' => 'formal',
+            'lang' => 'zh_CN',
+            'data' => $params['data']
+        ];
+        $res = $this->HttpRequestPost($url, json_encode($data), false);
+        if(!empty($res))
+        {
+            if(stripos($res, 'errcode') === false)
+            {
+                return DataReturn('发送成功', 0, $res);
+            }
+            $res = json_decode($res, true);
+            $msg = isset($res['errmsg']) ? $res['errmsg'] : '订阅消息发送失败';
+        } else {
+            $msg = '订阅消息发送失败';
+        }
+        return DataReturn($msg, -1);
+    }
+
+    /**
      * [GetMiniAccessToken 获取access_token]
      * @author   Devil
      * @blog     http://gong.gg/

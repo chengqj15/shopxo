@@ -4,10 +4,10 @@
 <div class="content-right">
 	<div class="content">
 		<!-- form start -->
-		<form class="am-form form-validation view-save" action="{{:MyUrl('admin/goods/batchimport')}}" method="POST" request-type="ajax-url" request-value="{{:MyUrl('admin/goods/index', $params)}}" enctype="multipart/form-data">
+		<form class="am-form form-validation view-save" action="{{:MyUrl('admin/goods/batchupdate')}}" method="POST" request-type="ajax-url" request-value="{{:MyUrl('admin/goods/index', $params)}}">
 			<legend>
 				<span class="am-text-default">
-					导入
+					批量修改
 				</span>
 				<a href="{{:MyUrl('admin/goods/index', $params)}}" class="am-fr am-text-sm am-margin-top-xs am-icon-mail-reply"> 返回</a>
 			</legend>
@@ -38,11 +38,14 @@
 					</select>
 				</div>
 
-				<div class="am-form-group am-form-file">
-					<label class="block">excel文件</label>
-					<ul id="upload_video_wrap" class="plug-file-upload-view goods-import-view" data-form-name="excel" data-max-number="1" data-dialog-type="file">
-					</ul>
-					<div class="plug-file-upload-submit" data-view-tag="ul.goods-import-view">+上传excel文件</div>
+				<div class="am-form-group">
+					<label>价格调幅(原价*X%）</label>
+					<input type="text" placeholder="价格调幅" class="am-radius popup_all_price" name="price" pattern="^([+-]?[0-9]{1}\d{0,6})(\.\d{1,2})?$" data-validation-message="请填写有效的数字" />
+				</div>
+
+				<div class="am-form-group">
+					<label>库存<span class="am-form-group-label-tips">默认数值 20</span></label>
+					<input type="number" name="inventory" placeholder="库存" min="0" max="100000000" data-validation-message="库存 0~100000000" class="am-radius" value="20" />
 				</div>
 				
 			</div>

@@ -740,6 +740,7 @@ CREATE TABLE `s_order` (
   `pay_status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '支付状态（0未支付, 1已支付, 2已退款, 3部分退款）',
   `extension_data` longtext COMMENT '扩展展示数据',
   `buy_number_count` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '购买商品总数量',
+  `service_fee` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '服务费',
   `increase_price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '增加的金额',
   `preferential_price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '优惠金额',
   `price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '订单单价',

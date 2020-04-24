@@ -1,0 +1,34 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <!-- table nav start -->
+        {{include file="site/nav" /}}
+        <!-- table nav end -->
+
+        <!-- form start -->
+        <form class="am-form form-validation view-save" action="{{:MyUrl('admin/site/save')}}" method="POST" request-type="ajax-url" request-value="{{:MyUrl('admin/site/index', ['nav_type'=>'servicefee'])}}" enctype="multipart/form-data">
+            <div class="am-form-group">
+                <label>服务费<span class="am-form-group-label-tips">订单金额*rate%</span></label>
+                <input type="text" placeholder="服务费" class="am-radius popup_all_price" name="common_order_service_fee_ratio" pattern="^([+-]?[0-9]{1}\d{0,6})(\.\d{1,2})?$" data-validation-message="请填写有效的数字" {{if !empty($data)}}value="{{$data.common_order_service_fee_ratio.value}}"{{/if}} />
+            </div>
+
+            <div class="am-form-group">
+                <label>服务费上限<span class="am-form-group-label-tips">min(订单金额*rate%, limit)</span></label>
+                <input type="text" placeholder="服务费上限" class="am-radius popup_all_price" name="common_order_service_fee_upper_limit" pattern="^([+-]?[0-9]{1}\d{0,6})(\.\d{1,2})?$" data-validation-message="请填写有效的数字" {{if !empty($data)}}value="{{$data.common_order_service_fee_upper_limit.value}}"{{/if}} />
+            </div>
+            
+            <div class="am-form-group am-form-group-refreshing">
+                <input type="hidden" name="nav_type" value="{{$nav_type}}" />
+                <button type="submit" class="am-btn am-btn-primary am-radius btn-loading-example am-btn-sm am-btn-block" data-am-loading="{loadingText:'处理中...'}">保存</button>
+            </div>
+        </form>
+        <!-- form end -->
+    </div>
+</div>
+<!-- right content end  -->
+        
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

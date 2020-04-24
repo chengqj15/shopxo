@@ -32,6 +32,9 @@
     <li {{if $nav_type eq 'goods'}}class="am-active"{{/if}} data-type="goods">
         <a href="{{:MyUrl('admin/site/index', ['nav_type'=>'goods'])}}">商品</a>
     </li>
+    <li {{if $nav_type eq 'servicefee'}}class="am-active"{{/if}} data-type="servicefee">
+        <a href="{{:MyUrl('admin/site/index', ['nav_type'=>'servicefee'])}}">服务费</a>
+    </li>
     <li {{if $nav_type eq 'extends'}}class="am-active"{{/if}} data-type="extends">
         <a href="{{:MyUrl('admin/site/index', ['nav_type'=>'extends'])}}">扩展项</a>
     </li>
