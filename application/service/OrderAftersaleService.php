@@ -463,9 +463,15 @@ class OrderAftersaleService
             {
                 $where[] = ['refundment', '=', intval($params['refundment'])];
             }
-            if(isset($params['status']) && $params['status'] > -1)
+            if(isset($params['status']) && $params['status'] != -1)
             {
-                $where[] = ['status', '=', intval($params['status'])];
+                // 多个状态,字符串以半角逗号分割
+                if(!is_array($params['status']))
+                {
+                    $params['status'] = explode(',', $params['status']);
+                }
+                $where[] = ['status', 'in', $params['status']];
+                // $where[] = ['status', '=', intval($params['status'])];
             }
             if(!empty($params['express_number']))
             {

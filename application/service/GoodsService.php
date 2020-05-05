@@ -195,6 +195,47 @@ class GoodsService
     }
 
     /**
+     * 获取首页最新商品数据
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-08-29
+     * @desc    description
+     * @param   [array]          $params [输入参数]
+     */
+    public static function HomeNewList($params = [])
+    {
+        $goods = self::GoodsList(['where'=>['is_home_recommended'=>1, 'is_shelves'=>1], 'm'=>0, 'n'=>4, 'order_by'=>'upd_time desc']);
+        return $goods;
+    }
+
+    /**
+     * 获取首页最热商品数据
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-08-29
+     * @desc    description
+     * @param   [array]          $params [输入参数]
+     */
+    public static function HomeHotList($params = [])
+    {
+        // 商品大分类
+        $goods = self::GoodsList(['where'=>['is_home_recommended'=>1, 'is_shelves'=>1], 'm'=>0, 'n'=>4, 'order_by'=>'access_count desc']);
+        return $goods;
+    }
+
+    public static function RecomGoods($goods_id)
+    {
+        // 商品大分类
+        $category_ids = Db::name('GoodsCategory')->alias('gc')->join(['__GOODS_CATEGORY_JOIN__'=>'gci'], 'gc.id=gci.category_id')->where(['gci.goods_id'=>$goods_id])->column('gc.id');
+
+        $goods = self::CategoryGoodsList(['where'=>['gci.category_id'=>$category_ids, 'g.is_shelves'=>1], 'm'=>0, 'n'=>4, 'field'=>'g.*']);
+        $goods = $goods['data'];
+        return $goods;
+    }
+
+    /**
      * 获取商品分类下的所有分类id
      * @author   Devil
      * @blog    http://gong.gg/

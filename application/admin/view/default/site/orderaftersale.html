@@ -24,6 +24,11 @@
                 <input type="text" name="{{$data.home_order_aftersale_return_goods_address.only_tag}}" placeholder="{{$data.home_order_aftersale_return_goods_address.name}}" data-validation-message="{{$data.home_order_aftersale_return_goods_address.error_tips}}" class="am-radius" {{if !empty($data)}}value="{{$data.home_order_aftersale_return_goods_address.value}}"{{/if}} />
             </div>
 
+            <div class="am-form-group">
+                <label>{{$data.home_order_aftersale_time_limit.name}}<span class="am-form-group-label-tips">{{$data.home_order_aftersale_time_limit.describe}}</span></label>
+                <input type="text" name="{{$data.home_order_aftersale_time_limit.only_tag}}" placeholder="{{$data.home_order_aftersale_time_limit.name}}" data-validation-message="{{$data.home_order_aftersale_time_limit.error_tips}}" class="am-radius" {{if !empty($data)}}value="{{$data.home_order_aftersale_time_limit.value}}"{{/if}} />
+            </div>
+
             <div class="am-form-group am-form-group-refreshing">
                 <input type="hidden" name="nav_type" value="{{$nav_type}}" />
                 <button type="submit" class="am-btn am-btn-primary am-radius btn-loading-example am-btn-sm am-btn-block" data-am-loading="{loadingText:'处理中...'}">保存</button>

@@ -82,6 +82,11 @@ class Buy extends Common
                 $result['plugins_coupon_data'] = $ret['data']['data'];
             }
 
+            // 提货配置
+            $result['common_self_extraction_days'] = MyC('common_self_extraction_days', 1, true);
+            $result['common_self_extraction_hours'] = MyC('common_self_extraction_hours', '11:00 - 13:00, 17:00 - 19:00, 21:00 - 22:00', true);
+
+
             return DataReturn('操作成功', 0, $result);
         }
         return $ret;

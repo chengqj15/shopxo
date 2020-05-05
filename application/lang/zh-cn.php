@@ -88,12 +88,12 @@ return array(
     // 用户端 - 订单管理
     'common_order_user_status'          =>  array(
             0 => array('id' => 0, 'name' => '待确认', 'checked' => true),
-            1 => array('id' => 1, 'name' => '待付款'),
-            2 => array('id' => 2, 'name' => '待发货'),
-            3 => array('id' => 3, 'name' => '待收货'),
-            4 => array('id' => 4, 'name' => '已完成'),
-            5 => array('id' => 5, 'name' => '已取消'),
-            6 => array('id' => 6, 'name' => '已关闭'),
+            1 => array('id' => 1, 'name' => 'Waiting payment'),
+            2 => array('id' => 2, 'name' => 'Paid'),
+            3 => array('id' => 3, 'name' => 'Delivered'),
+            4 => array('id' => 4, 'name' => 'Done'),
+            5 => array('id' => 5, 'name' => 'Canceled'),
+            6 => array('id' => 6, 'name' => 'Closed'),
         ),
 
     // 后台管理 - 订单管理

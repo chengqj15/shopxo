@@ -82,5 +82,67 @@ class Index extends Common
 		// 返回数据
 		return DataReturn('success', 0, $result);
 	}
+
+	/**
+	 * [Index 入口]
+	 * @author   Devil
+	 * @blog     http://gong.gg/
+	 * @version  1.0.0
+	 * @datetime 2018-05-25T11:03:59+0800
+	 */
+	public function Index2()
+	{
+		// 返回数据
+		$new_goods = [];
+		$new_goods_ret = GoodsService::HomeNewList();
+		if($new_goods_ret['code'] == 0){
+			$new_goods = $new_goods_ret['data'];
+		}
+		$hot_goods = [];
+		$hot_goods_ret = GoodsService::HomeHotList();
+		if($hot_goods_ret['code'] == 0){
+			$hot_goods = $hot_goods_ret['data'];
+		}
+		$result = [
+			'navigation'						=> AppHomeNavService::AppHomeNav(),
+			'banner_list'						=> BannerService::Banner(),
+			'new_goods'							=> $new_goods,
+			'hot_goods'							=> $hot_goods,
+			'common_shop_notice'				=> MyC('common_shop_notice', null, true),
+			'common_app_is_enable_search'		=> (int) MyC('common_app_is_enable_search', 1),
+			'common_app_is_enable_answer'		=> (int) MyC('common_app_is_enable_answer', 1),
+			'common_app_is_header_nav_fixed'	=> (int) MyC('common_app_is_header_nav_fixed', 0),
+			'common_app_is_online_service'		=> (int) MyC('common_app_is_online_service', 0),
+			'common_app_is_limitedtimediscount'	=> (int) MyC('common_app_is_limitedtimediscount'),
+			'common_cart_total'                 => BuyService::UserCartTotal(['user'=>$this->user]),
+		];
+
+		// 支付宝小程序在线客服
+		if(APPLICATION_CLIENT_TYPE == 'alipay')
+		{
+			$result['common_app_mini_alipay_tnt_inst_id'] = MyC('common_app_mini_alipay_tnt_inst_id', null, true);
+			$result['common_app_mini_alipay_scene'] = MyC('common_app_mini_alipay_scene', null, true);
+		}
+
+		// 限时秒杀
+		if($result['common_app_is_limitedtimediscount'] == 1)
+		{
+			$ret = PluginsService::PluginsControlCall(
+                'limitedtimediscount', 'index', 'index', 'api');
+            if($ret['code'] == 0 && isset($ret['data']['code']) && $ret['data']['code'] == 0)
+            {
+                $result['plugins_limitedtimediscount_data'] = $ret['data']['data'];
+            }
+		}
+
+		//类别
+		$params['is_home_recommended'] = 1;
+        $params['pid'] = 0;
+        $category = GoodsService::GoodsCategoryList($params);
+        $result['category'] = $category;
+
+		// 返回数据
+		return DataReturn('success', 0, $result);
+	}
 }
 ?>

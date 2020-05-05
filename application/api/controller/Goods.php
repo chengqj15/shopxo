@@ -100,9 +100,12 @@ class Goods extends Common
         $category = GoodsService::GoodsCategoryNames($goods_id);
         $ret['data'][0]['category_names'] = $category['data'];
 
+        $recom_goods = GoodsService::RecomGoods($goods_id);
+
         // 数据返回
         $result = [
             'goods'                             => $ret['data'][0],
+            'recom_goods'                       => $recom_goods,
             'common_order_is_booking'           => (int) MyC('common_order_is_booking'),
             'common_app_is_use_mobile_detail'   => $is_use_mobile_detail,
             'common_app_is_online_service'      => (int) MyC('common_app_is_online_service'),
@@ -219,6 +222,16 @@ class Goods extends Common
         // 开始处理
         $params = $this->data_post;
         $data = GoodsService::GoodsCategory($params);
+        return DataReturn('success', 0, $data);
+    }
+
+    public function Category2()
+    {
+        // 开始处理
+        $params = [];
+        $params['is_home_recommended'] = 1;
+        $params['pid'] = 0;
+        $data = GoodsService::GoodsCategoryList($params);
         return DataReturn('success', 0, $data);
     }
 

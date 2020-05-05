@@ -861,7 +861,7 @@ class OrderService
                             {
                                 $orderaftersale = Db::name('OrderAftersale')->where(['order_detail_id'=>$vs['id']])->order('id desc')->find();
                                 $vs['orderaftersale'] = $orderaftersale;
-                                $vs['orderaftersale_btn_text'] = self::OrderAftersaleStatusBtnText($v['status'], $orderaftersale);
+                                $vs['orderaftersale_btn_text'] = self::OrderAftersaleStatusBtnText($v['status'], strtotime($v['add_time']), $orderaftersale);
                             }
                         }
                     }
@@ -869,7 +869,7 @@ class OrderService
                     $v['items_count'] = count($items);
 
                     // 描述
-                    $v['describe'] = '共'.$v['buy_number_count'].'件 合计:'.config('shopxo.price_symbol').$v['total_price'].'元';
+                    $v['describe'] = 'total'.$v['buy_number_count'].' amount:'.config('shopxo.price_symbol').$v['total_price'];
                 }
 
                 // 订单处理后钩子
@@ -956,7 +956,7 @@ class OrderService
      * @param    [int]                   $order_status   [订单状态]
      * @param    [array]                 $orderaftersale [售后数据]
      */
-    private static function OrderAftersaleStatusBtnText($order_status, $orderaftersale)
+    private static function OrderAftersaleStatusBtnText($order_status, $add_time, $orderaftersale)
     {
         $text = '';
         if(in_array($order_status, [2,3,4,6]))
@@ -965,15 +965,21 @@ class OrderService
             {
                 if(in_array($order_status, [2,3]))
                 {
-                    $text = '退款/退货';
+                    $interval = MyC('home_order_aftersale_time_limit',0, true);
+                    if($interval > 0 && (time() - $add_time) >  $interval * 60 * 1000) {
+                        $text = '';
+                    }else{
+                        $text = 'refund';
+                    }
                 } else {
                     if($order_status == 4)
                     {
-                        $text = '申请售后';
+                        $text = 'aftersale';
                     }
                 }
             } else {
-                $text = ($orderaftersale['status'] == 3) ? '查看退款' : '查看进度';
+                // $text = ($orderaftersale['status'] == 3) ? 'refund progress' : '查看进度';
+                $text = 'refund progress';
             }
         }
         return $text;

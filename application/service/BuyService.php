@@ -909,8 +909,8 @@ class BuyService
 
         // 销售型,自提点,销售+自提 地址处理
         $address = [];
-        $contact_address=[]
-        $target_date = ''
+        $contact_address=[];
+        $target_date = '';
         if(in_array($site_model, [0,2]))
         {
             if(empty($buy['data']['base']['address']))
@@ -1730,6 +1730,10 @@ class BuyService
                     break;
                 }
             }
+        }
+
+        if(empty($default) && !empty($address['data'])){
+            $default = $address['data'][0];
         }
 
         // 返回数据

@@ -113,8 +113,8 @@ class RegionService
             [
                 'checked_type'      => 'length',
                 'key_name'          => 'name',
-                'checked_data'      => '2,16',
-                'error_msg'         => '名称格式 2~16 个字符',
+                'checked_data'      => '2,32',
+                'error_msg'         => '名称格式 2~32 个字符',
             ],
         ];
         $ret = ParamsChecked($params, $p);

@@ -83,19 +83,32 @@
                     <h3 class="am-panel-title">自提点</h3>
                 </div>
                 <div class="am-panel-bd">
-                    <ul class="am-list am-list-static am-list-border am-list-striped am-form-group am-btn-sm am-margin-bottom-0 am-padding-bottom-0 address-list">
-                        {{if !empty($sitetype_address_list) and is_array($sitetype_address_list)}}
-                            {{foreach $sitetype_address_list as $address}}
-                                <li>
-                                    <span>{{$address.province_name}} {{$address.city_name}} {{$address.county_name}} {{$address.address}}（{{$address.name}}-{{$address.tel}}）{{if !empty($address['alias'])}}<span class="am-badge am-radius am-badge-success am-margin-left-xs">{{$address.alias}}</span>{{/if}}</span>
-                                    <span class="am-badge am-radius am-icon-remove delete-submit"> 移除</span>
-                                    <span class="am-badge am-radius am-icon-edit edit-submit"> 编辑</span>
-                                </li>
-                            {{/foreach}}
-                        {{/if}}
-                    </ul>
-                    <input type="hidden" name="{{$data.common_self_extraction_address.only_tag}}" value="{{$data.common_self_extraction_address.value}}" class="self-extraction-address-value" />
-                    <button type="button" class="am-btn am-btn-secondary am-radius am-icon-plus am-btn-sm am-margin-top-sm address-submit-add"> 添加地址</button>
+                    <!-- 自提时间配置 -->
+                    <div class="am-form-group">
+                        <label>{{$data.common_self_extraction_days.name}}<span class="am-form-group-label-tips">{{$data.common_self_extraction_days.describe}}</span></label>
+                        <input type="text" name="{{$data.common_self_extraction_days.only_tag}}" placeholder="{{$data.common_self_extraction_days.describe}}" data-validation-message="{{$data.common_self_extraction_days.error_tips}}" class="am-radius" {{if !empty($data)}}value="{{$data.common_self_extraction_days.value}}"{{/if}} />
+                    </div>
+
+                    <div class="am-form-group">
+                        <label>{{$data.common_self_extraction_hours.name}}<span class="am-form-group-label-tips">{{$data.common_self_extraction_hours.describe}}</span></label>
+                        <input type="text" name="{{$data.common_self_extraction_hours.only_tag}}" placeholder="{{$data.common_self_extraction_hours.describe}}" data-validation-message="{{$data.common_self_extraction_hours.error_tips}}" class="am-radius" {{if !empty($data)}}value="{{$data.common_self_extraction_hours.value}}"{{/if}} />
+                    </div>
+
+                    <div class="am-form-group">
+                        <ul class="am-list am-list-static am-list-border am-list-striped am-form-group am-btn-sm am-margin-bottom-0 am-padding-bottom-0 address-list">
+                            {{if !empty($sitetype_address_list) and is_array($sitetype_address_list)}}
+                                {{foreach $sitetype_address_list as $address}}
+                                    <li>
+                                        <span>{{$address.province_name}} {{$address.city_name}} {{$address.county_name}} {{$address.address}}（{{$address.name}}-{{$address.tel}}）{{if !empty($address['alias'])}}<span class="am-badge am-radius am-badge-success am-margin-left-xs">{{$address.alias}}</span>{{/if}}</span>
+                                        <span class="am-badge am-radius am-icon-remove delete-submit"> 移除</span>
+                                        <span class="am-badge am-radius am-icon-edit edit-submit"> 编辑</span>
+                                    </li>
+                                {{/foreach}}
+                            {{/if}}
+                        </ul>
+                        <input type="hidden" name="{{$data.common_self_extraction_address.only_tag}}" value="{{$data.common_self_extraction_address.value}}" class="self-extraction-address-value" />
+                        <button type="button" class="am-btn am-btn-secondary am-radius am-icon-plus am-btn-sm am-margin-top-sm address-submit-add"> 添加地址</button>
+                    </div>
                 </div>
             </div>
 
