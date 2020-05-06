@@ -1249,12 +1249,12 @@ class OrderAftersaleService
     public static function OrderAftersaleTipsMsg($orderaftersale = [])
     {
         $msg_all = [
-            0 => '订单售后已提交申请，等待管理员确认中！',
-            1 => '订单售后，管理员已确认，请尽快完成退货！',
-            2 => '订单售后已退货，等待管理员审核中！',
-            3 => '订单售后已处理结束！',
-            4 => '订单售后申请已被拒绝！',
-            5 => '订单售后申请已关闭！',
+            0 => 'The application has been submitted！',
+            1 => 'The application has been comfirmed，please return the goods！',
+            2 => 'Waiting for the administrator to review！',
+            3 => 'The application has been processed',
+            4 => 'The application has been rejected！',
+            5 => 'The application has been closed！',
         ];
         if(isset($orderaftersale['status']) && array_key_exists($orderaftersale['status'], $msg_all))
         {

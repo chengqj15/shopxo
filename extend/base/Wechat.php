@@ -9,6 +9,7 @@
 // | Author: Devil
 // +----------------------------------------------------------------------
 namespace base;
+use think\facade\Log;
 
 /**
  * 微信驱动
@@ -237,6 +238,7 @@ class Wechat
             'lang' => 'zh_CN',
             'data' => $params['data']
         ];
+        Log::write('SendSubscribeMessage data:' . json_encode($data));
         $res = $this->HttpRequestPost($url, json_encode($data), false);
         if(!empty($res))
         {

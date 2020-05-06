@@ -245,5 +245,24 @@ class Order extends Common
         $params['user']['user_name_view'] = '管理员'.'-'.$this->admin['username'];
         return OrderService::AdminPay($params);
     }
+
+    /**
+     * 发送取货通知
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-09-28
+     * @desc    description
+     */
+    public function SendNotice()
+    {
+        // 是否ajax请求
+        if(!IS_AJAX)
+        {
+            return $this->error('非法访问');
+        }
+        $params = input();
+        return OrderService::SendNotice($params);
+    }
 }
 ?>

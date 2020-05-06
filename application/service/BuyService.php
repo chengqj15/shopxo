@@ -1062,6 +1062,15 @@ class BuyService
         // 获取数据库订单信息
         $order = Db::name('Order')->find($order_id);
 
+        $key = 'start_order_id_' . date('Ymd', $order['add_time']);
+        $start_order_id = cache($key);
+        if(empty($start_order_id)){
+            $start_order_id = $order_id;
+            cache($key, $start_order_id);
+        }
+        Db::name('Order')->where(['id'=>$order_id])->update(['biz_id' => $order_id - $start_order_id + 1]);
+
+
         // 订单添加成功钩子, 不校验返回值
         $hook_name = 'plugins_service_buy_order_insert_success';
         Hook::listen($hook_name, [

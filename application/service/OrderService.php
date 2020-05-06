@@ -869,7 +869,7 @@ class OrderService
                     $v['items_count'] = count($items);
 
                     // 描述
-                    $v['describe'] = 'total'.$v['buy_number_count'].' amount:'.config('shopxo.price_symbol').$v['total_price'];
+                    $v['describe'] = 'total:'.$v['buy_number_count'].' amount:'.config('shopxo.price_symbol').$v['total_price'];
                 }
 
                 // 订单处理后钩子
@@ -963,20 +963,15 @@ class OrderService
         {
             if(empty($orderaftersale))
             {
-                if(in_array($order_status, [2,3]))
+                if(in_array($order_status, [2,3,4]))
                 {
                     $interval = MyC('home_order_aftersale_time_limit',0, true);
-                    if($interval > 0 && (time() - $add_time) >  $interval * 60 * 1000) {
+                    if($interval > 0 && (time() - $add_time) >  $interval * 60) {
                         $text = '';
                     }else{
                         $text = 'refund';
                     }
-                } else {
-                    if($order_status == 4)
-                    {
-                        $text = 'aftersale';
-                    }
-                }
+                } 
             } else {
                 // $text = ($orderaftersale['status'] == 3) ? 'refund progress' : '查看进度';
                 $text = 'refund progress';
@@ -1157,6 +1152,7 @@ class OrderService
             $status_text = lang('common_order_user_status')[$order['status']]['name'];
             return DataReturn('状态不可操作['.$status_text.']', -1);
         }
+        $extraction_code = "";
 
         // 订单模式
         switch($order['order_model'])
@@ -1241,45 +1237,7 @@ class OrderService
             // 提交事务
             Db::commit();
             try{
-                if($order['order_model'] == 2){
-                    // 发送订阅消息通知
-                    $address_data = self::OrderAddressData($order['id']);
-                                        // {{$v.address_data.province_name}}<br />
-                                        // {{$v.address_data.city_name}}<br />
-                                        // {{$v.address_data.county_name}}<br />
-                                        // {{$v.address_data.address}}
-
-                    $weixin_openid = self::UserInfo('id', $params['user_id'], 'weixin_openid');
-                    $notice_param = [
-                        'touser' => $weixin_openid,
-                        'template_id' => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY',
-                        'page' => '',
-                        'data' => [
-                            // 取件码
-                            'character_string1' => [
-                                'value' => $extraction_code,
-                            ],
-                            // 订单号
-                            'character_string2' => [
-                                'value' => $order['order_no'],
-                            ],
-                            // 联系电话
-                            'phone_number3' => [
-                                'value' => $address_data['tel'],
-                            ],
-                            // 取货地址
-                            'thing4' => [
-                                'value' => $address_data['address'],
-                            ],
-                            // 日期
-                            'time5' => [
-                                'value' => date("Y-m-d H:i:s"),
-                            ],
-                        ]
-                    ];
-                    $result = (new \base\Wechat(MyC('common_app_mini_weixin_appid'), MyC('common_app_mini_weixin_appsecret')))->SendSubscribeMessage($notice_param);
-                    Log::write('SendSubscribeMessage ret:' . json_encode($result));
-                }
+                self::SendPickupNotice($order, $extraction_code);
             }catch(Exception $e){
                 Log::write('SendSubscribeMessage error:' . $e->getMessage());
             }
@@ -1291,6 +1249,72 @@ class OrderService
         // 事务回滚
         Db::rollback();
         return DataReturn('发货失败', -1);
+    }
+
+    public static function SendNotice($params = []){
+        // 获取订单信息
+        $where = ['id'=>intval($params['id']), 'is_delete_time'=>0, 'user_is_delete_time'=>0];
+        $order = Db::name('Order')->where($where)->field('id,status,user_id,order_model,order_no')->find();
+        $extraction_code = Db::name('OrderExtractionCode')->where(['order_id'=>$order['id']])->value('code');
+        if(empty($extraction_code))
+        {
+            return DataReturn('订单取货码不存在、请联系管理员', -10);
+        }
+        try{
+            return self::SendPickupNotice($order, $extraction_code);
+        }catch(Exception $e){
+            Log::write('SendSubscribeMessage error:' . $e->getMessage());
+            return DataReturn('发送通知失败：' . $e->getMessage(), -1);
+        }
+    }
+
+    public static function SendPickupNotice($order = [], $extraction_code){
+        $result = [];
+        if($order['order_model'] == 2){
+            // 发送订阅消息通知
+            $address_data = self::OrderAddressData($order['id']);
+            $user = UserService::UserInfo('id', $order['user_id'], 'weixin_openid');
+            if(empty($user)){
+                return DataReturn('用户不存在或已删除', -110);
+            }
+            $weixin_openid = $user['weixin_openid'];
+            if(empty($weixin_openid)){
+                return DataReturn('用户openid不存在', -111);
+            }
+            $notice_param = [
+                'touser' => $weixin_openid,
+                'template_id' => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY',
+                'page' => '/pages/user-order-detail/user-order-detail?id=' . $order['id'],
+                'data' => [
+                    // 取件码
+                    'character_string1' => [
+                        'value' => $extraction_code,
+                    ],
+                    // 订单号
+                    'character_string2' => [
+                        'value' => $order['order_no'],
+                    ],
+                    // 联系电话
+                    'phone_number3' => [
+                        'value' => $address_data['tel'],
+                    ],
+                    // 取货地址
+                    'thing4' => [
+                        'value' => $address_data['address'],
+                    ],
+                    // 日期
+                    'time5' => [
+                        'value' => date("Y-m-d H:i:s"),
+                    ],
+                ]
+            ];
+            $result = (new \base\Wechat(MyC('common_app_mini_weixin_appid'), MyC('common_app_mini_weixin_appsecret')))->SendSubscribeMessage($notice_param);
+            Log::write('SendSubscribeMessage ret:' . json_encode($result));
+        }else{
+            Log::write('SendSubscribeMessage end, order model=' . $order['order_model']);
+            $result = DataReturn('不符合的类型', 0, $res);
+        }
+        return $result;
     }
 
     /**
