@@ -15,6 +15,7 @@ use think\facade\Hook;
 use app\service\RegionService;
 use app\service\SafetyService;
 use app\service\ResourcesService;
+use app\service\UserLevelService;
 
 /**
  * 用户服务层
@@ -1906,7 +1907,20 @@ class UserService
 
         // 添加用户
         $data['add_time'] = time();
+        //添加用户和会员信息
+        Db::startTrans();
         $user_id = Db::name('User')->insertGetId($data);
+        if($user_id > 0)
+        {
+            UserLevelService::initUserLevelInfo();
+            Db::commit();
+            return DataReturn('新增成功', 0);
+        } else {
+            Db::rollback();
+            return DataReturn('新增失败');
+        }
+        
+
         if($user_id > 0)
         {
             // 清除推荐id

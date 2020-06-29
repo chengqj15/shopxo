@@ -1,0 +1,88 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <form class="am-form form-validation form-search" method="post" action="{{:MyUrl('admin/userlevel/index')}}" request-type="form">
+            <div class="thin">
+                <div class="am-input-group am-input-group-sm am-fl so">
+                    <input type="text" autocomplete="off" name="keywords" class="am-radius" placeholder="会员等级名称" value="{{if !empty($params.keywords)}}{{$params.keywords}}{{/if}}" />
+                    <span class="am-input-group-btn">
+                        <button class="am-btn am-btn-default am-radius" type="submit" data-am-loading="{spinner:'circle-o-notch', loadingText:'搜索中...'}">搜索</button>
+                    </span>
+                </div>
+            </div>
+        </form>
+
+        <!-- top operation start -->
+        <div class="am-g am-margin-top-sm">
+            <a href="{{:MyUrl('admin/userlevel/saveinfo')}}" class="am-btn am-btn-secondary am-radius am-btn-xs am-icon-plus"> 添加会员等级</a>
+        </div>
+
+        <table class="am-table am-table-striped am-table-hover am-text-middle am-margin-top-sm am-margin-left-xs">
+            <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>等级图片</th>
+                    <th class="am-hide-sm-only">等级名称</th>
+                    <th class="am-hide-sm-only">等级</th>
+                    <th class="am-hide-sm-only">成长值</th>
+                    <th class="am-hide-sm-only">价格</th>
+                    <th class="am-hide-sm-only">有效时间</th>
+                    <th class="am-hide-sm-only">是否使用</th>
+                    <th class="am-hide-sm-only">等级说明</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{if !empty($data_list)}}
+                    {{foreach $data_list as $v}}
+                        <tr id="data-list-{{$v.id}}">
+                            <td>{{$v.id}}</td>
+                            <td class="user-info">
+                                <img src="{{$v.image}}" style="width:200px;height:112px;" class="am-fl am-img-thumbnail am-radius am-hide-sm-only" />
+                            </td>
+                            <td class="am-hide-sm-only">
+                                {{$v.name}}
+                            </td>
+                            <td class="am-hide-sm-only">
+                                {{$v.grade}}
+                            </td>
+                            <td class="am-hide-sm-only">
+                                {{$v.point}}
+                            </td>
+                            <td>
+                                {{$v['money']}}
+                            </td>
+                            <td class="am-hide-sm-only">
+                                {{if $v['is_forever'] == 1}}永久
+                                {{else /}}
+                                    {{if empty($v['valid_date'])}}<span class="cr-ddd">未填写</span>{{else /}}{{$v.valid_date}} {{:GetLevelValidType($v.valid_type)}}{{/if}}
+                                {{/if}}
+                            </td>
+                            <td>
+                                {{$v.is_show}}
+                            </td>
+                            <td>
+                                {{$v.explain}}
+                            </td>
+                            <td class="view-operation">
+                                <a href="{{:MyUrl('admin/userlevel/saveinfo', array_merge($params,array('id'=>$v['id'])))}}">
+                                    <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-edit"> 编辑</button>
+                                </a>
+                                <a href="{{:MyUrl('admin/userlevel/tasklist', array_merge($params,array('level_id'=>$v['id'])))}}">
+                                    <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-edit"> 任务</button>
+                                </a>
+                                <button class="am-btn am-btn-danger am-btn-xs am-radius am-icon-trash-o submit-delete" data-url="{{:MyUrl('admin/userlevel/delete')}}" data-id="{{$v.id}}"> 删除</button>
+                            </td>
+                        </tr>
+                    {{/foreach}}
+                {{/if}}
+            </tbody>
+        </table>
+        {{if empty($data_list)}}
+            <div class="table-no"><i class="am-icon-warning"></i> 没有相关数据</div>
+        {{/if}}
+
+    </div>
+</div>

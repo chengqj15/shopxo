@@ -1,0 +1,36 @@
+{
+    "base":{
+        "plugins":"multilingual",
+        "name":"多语言",
+        "logo":"\/static\/upload\/images\/plugins_multilingual\/2020\/01\/19\/1579429282323325.jpg",
+        "author":"Devil",
+        "author_url":"https:\/\/shopxo.net\/",
+        "version":"0.0.1",
+        "desc":"多语言切换、目前仅支持（中文—繁体）",
+        "apply_terminal":[
+            "pc",
+            "h5"
+        ],
+        "apply_version":[
+            "1.5.0",
+            "1.6.0",
+            "1.7.0",
+            "1.8.0"
+        ],
+        "is_home":false
+    },
+    "hook":{
+        "plugins_css":[
+            "app\\plugins\\multilingual\\Hook"
+        ],
+        "plugins_js":[
+            "app\\plugins\\multilingual\\Hook"
+        ],
+        "plugins_view_header_navigation_top_left":[
+            "app\\plugins\\multilingual\\Hook"
+        ],
+        "plugins_view_common_bottom":[
+            "app\\plugins\\multilingual\\Hook"
+        ]
+    }
+}

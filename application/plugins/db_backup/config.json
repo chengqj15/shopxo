@@ -1,0 +1,23 @@
+{
+    "base":{
+        "plugins":"db_backup",
+        "name":"数据备份",
+        "logo":"\/static\/upload\/images\/plugins_db_backup\/2019\/11\/19\/1574160049650236.png",
+        "author":"Brisklan",
+        "author_url":"http:\/\/blog.alipay168.cn\/",
+        "version":"1.0.0",
+        "desc":"对本数据库进行备份操作，提供数据库备份、备份文件删除操作。",
+        "apply_terminal":[
+            "pc"
+        ],
+        "apply_version":[
+            "1.5.0",
+            "1.6.0",
+            "1.7.0"
+        ],
+        "is_home":false
+    },
+    "hook":{
+        
+    }
+}

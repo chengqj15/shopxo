@@ -11,6 +11,18 @@
 
 // 应用公共文件
 
+
+function GetLevelValidType($type)
+{
+    if($type == 0){
+        return '天';
+    }elseif ($type == 1) {
+        return '年';
+    }else{
+        return '月';
+    }
+}
+
 /**
  * 钩子返回数据处理，是否存在错误
  * @author  Devil

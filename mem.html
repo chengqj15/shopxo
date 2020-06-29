@@ -1,0 +1,278 @@
+<view class="page-content" style="min-height:812px; min-height:100vh;">
+
+  <view class="container is-pc">
+    <view class="container">
+      <view  class="info-header">
+        <view class="info-avatar">
+          <image bindtap="preview_event" binderror="user_avatar_error" class="avatar" src="http://thirdwx.qlogo.cn/mmopen/KydxAIB52xlEaWdsvsicl2eK2XAiaJlNQv5k7xdn6uY6QoPAtv6qLHAF4CibOiaslNUNqCNWaFlAmFMyHM7fdJCmiaPg0kvoZhXNV/132" mode="widthFix" />
+        </view>
+        <view class="person-info van-cell">
+          <view class="van-cell__title">
+            <view class="person_name">
+              天行健 
+              <view class="level-icon">
+                <image src="/images/li.png" class="level-img" />
+                LV.1
+              </view>
+            </view>
+            <view class="person_desc">
+              永久有效
+            </view>
+          </view>
+          <view class="van-cell__value">
+            <navigator class="value-link" url="/pages/user-vip/rules" hover-class="none">
+              <view >等级规则</view>
+              <image class="arrow-icon" mode="scaleToFill" src="/images/arrow.png" role="img"></image>
+            </navigator>
+          </view>
+        </view>
+      </view>
+      <view  class="levels-wrapper">
+        <view  class="card-bg">
+
+        </view>
+        <view  class="level-bottom-radius">
+
+        </view>
+        <view  class="swipe-wrapper">
+          <view  class="van-swipe">
+            <swiper class="van-swipe__track">
+            <block wx:for="{{VipList}}" wx:key>
+              <swiper-item  class="van-swipe-item">
+                <view  class="level-wrap" mask="/images/m1.png" style="height: 197.3px; background-size: cover; background-position: center center; background-image: url('/images/l1.png');">
+                  <view class="bg-mask" style="background: url('/images/b1.png') center center / cover no-repeat;">
+
+                  </view>
+                  <view class="level-top">
+                    <view class="card-level">
+                      <view class="level-name">
+                        青铜会员
+                        <view class="level-icon"><image src="/images/li.png" class="level-img" />
+                          <view calss="level-text">LV.1</view>
+                        </view>
+                      </view>
+                    </view>
+                    <view class="card-code">
+                      <view class="icon" style="background: url(/images/QR.png) 50% no-repeat; background-size: 30px 30px">
+
+                      </view>
+                      会员码
+                    </view><!---->
+                  </view>
+                  <view class="level-middle">
+                    <view class="level-gift">
+                      <view class="level-num">0</view>
+                      <view>成长值</view>
+                    </view>
+                    <view class="van-progress" style="height: 2px;">
+                      <view class="van-progress__portion" style="background: rgb(255, 255, 255); width: 340px;"></view>
+                    </view>
+                  </view>
+                  <view class="level-bottom">
+                    <view class="level-value">
+                      再获得100成长值成为LV.2
+                    </view>
+                    <view class="level-upgrade">
+                      <i class="current-level-location van-icon van-icon-location"><!----></i>当前等级
+                    </view>
+                  </view>
+                </view>
+              </swiper-item>
+            </block>
+              <swiper-item  class="van-swipe-item">
+                <view  class="level-wrap" mask="/images/m1.png" style="height: 197.3px; background-size: cover; background-position: center center; background-image: url('/images/l2.png');">
+                  <view class="bg-mask" style="background: url('/images/b1.png') center center / cover no-repeat;">
+
+                  </view>
+                  <view class="level-top">
+                    <view class="card-level">
+                      <view class="level-name">
+                        白银会员
+                        <view class="level-icon"><image src="/images/li.png" class="level-img" />
+                          <view calss="level-text">LV.2</view>
+                        </view>
+                      </view>
+                    </view><!----><!---->
+                  </view>
+                  <view class="level-middle">
+                    <view class="level-gift">
+                      <view class="level-num">0</view><view data-v-ad015504="">成长值</view>
+                    </view>
+                    <view class="van-progress" style="height: 2px;">
+                      <view class="van-progress__portion" style="background: rgb(255, 255, 255); width: 0px;"></view>
+                    </view>
+                  </view>
+                  <view class="level-bottom">
+                    <view class="level-value">
+                      完善信息即可成为会员
+                    </view><!---->
+                  </view>
+                </view>
+              </swiper-item>
+              <swiper-item  class="van-swipe-item">
+                <view  class="level-wrap" mask="/images/m1.png" style="height: 197.3px; background-size: cover; background-position: center center; background-image: url('/images/l3.png');">
+                  <view class="bg-mask" style="background: url('/images/b1.png') center center / cover no-repeat;">
+
+                  </view>
+                  <view class="level-top">
+                    <view class="card-level">
+                      <view class="level-name">
+                        黄金会员
+                        <view class="level-icon"><image src="/images/li.png" class="level-img" />
+                          <view calss="level-text">LV.3</view>
+                        </view>
+                      </view>
+                    </view><!----><!---->
+                  </view>
+                  <view class="level-middle">
+                    <view class="level-gift">
+                      <view class="level-num">0</view><view data-v-ad015504="">成长值</view>
+                    </view>
+                    <view class="van-progress" style="height: 2px;">
+                      <view class="van-progress__portion" style="background: rgb(255, 255, 255); width: 0px;"></view>
+                    </view>
+                  </view>
+                  <view class="level-bottom">
+                    <view class="level-value">
+                      完善信息即可成为会员
+                    </view><!---->
+                  </view>
+                </view>
+              </swiper-item>
+              <swiper-item  class="van-swipe-item">
+                <view  class="level-wrap" mask="/images/m1.png" style="height: 197.3px; background-size: cover; background-position: center center; background-image: url('/images/l4.png');">
+                  <view class="bg-mask" style="background: url('/images/b1.png') center center / cover no-repeat;">
+
+                  </view>
+                  <view class="level-top">
+                    <view class="card-level">
+                      <view class="level-name">
+                        铂金会员
+                        <view class="level-icon"><image src="/images/li.png" class="level-img" />
+                          <view calss="level-text">LV.4</view>
+                        </view>
+                      </view>
+                    </view><!----><!---->
+                  </view>
+                  <view class="level-middle">
+                    <view class="level-gift">
+                      <view class="level-num">0</view><view data-v-ad015504="">成长值</view>
+                    </view>
+                    <view class="van-progress" style="height: 2px;">
+                      <view class="van-progress__portion" style="background: rgb(255, 255, 255); width: 0px;"></view>
+                    </view>
+                  </view>
+                  <view class="level-bottom">
+                    <view class="level-value">
+                      完善信息即可成为会员
+                    </view><!---->
+                  </view>
+                </view>
+              </swiper-item>
+              <swiper-item  class="van-swipe-item">
+                <view  class="level-wrap" mask="/images/m1.png" style="height: 197.3px; background-size: cover; background-position: center center; background-image: url('/images/l5.png');">
+                  <view class="bg-mask" style="background: url('/images/b1.png') center center / cover no-repeat;">
+
+                  </view>
+                  <view class="level-top">
+                    <view class="card-level">
+                      <view class="level-name">
+                        钻石会员
+                        <view class="level-icon"><image src="/images/li.png" class="level-img" />
+                          <view calss="level-text">LV.5</view>
+                        </view>
+                      </view>
+                    </view><!----><!---->
+                  </view>
+                  <view class="level-middle">
+                    <view class="level-gift">
+                      <view class="level-num">0</view><view data-v-ad015504="">成长值</view>
+                    </view>
+                    <view class="van-progress" style="height: 2px;">
+                      <view class="van-progress__portion" style="background: rgb(255, 255, 255); width: 0px;"></view>
+                    </view>
+                  </view>
+                  <view class="level-bottom">
+                    <view class="level-value">
+                      完善信息即可成为会员
+                    </view><!---->
+                  </view>
+                </view>
+              </swiper-item>
+            </swiper>
+          </view>
+        </view>
+        <view  class="benefit-slogan-space"><!---->
+
+        </view>
+        <view  class="simple-benefit-list"><!----><!---->
+
+        </view>
+        <view  class="task-list">
+          <view  class="task-label">
+            成长任务
+            <image class="arrow-icon" mode="scaleToFill" src="/images/arrow.png" role="img"></image>
+          </view>
+          <view  class="missions-list">
+            <view class="mission-item">
+              <image src="//img.yzcdn.cn/public_files/2019/01/25/a31ba9940db047014b4d9a3c7e534703.png" class="mission-icon" />
+              <view class="mission-info">
+                <h4 class="mission-info__title">
+                  购买商品
+                </h4>
+                <view class="mission-info__desc">
+                  每消费1元，获得1点成长值
+                </view>
+              </view>
+              <view class="mission-action">
+                <view class="mission-action__text">去完成</view>
+              </view>
+            </view>
+          </view>
+          <view class="mission-item">
+            <image src="//img.yzcdn.cn/public_files/2019/01/25/a31ba9940db047014b4d9a3c7e534703.png" class="mission-icon" />
+            <view class="mission-info">
+              <h4 class="mission-info__title">
+                购买会员
+              </h4>
+              <view class="mission-info__desc">
+                立即开通会员服务，最低199$起
+              </view>
+            </view>
+            <view class="mission-action">
+              <navigator class="mission-action__text" url="/pages/user-vip/upgrade" hover-class="none">
+              去开通
+              </navigator>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="showcase-components-container h5-cpns-style h5-cpns-showcase-components-container">
+
+      </view>
+    </view><!---->
+    <view class="van-overlay" style="z-index: 2001; display: none;">
+
+    </view>
+    <view  role="dialog" class="info-dialog van-dialog" style="z-index: 2002; display: none;">
+      <view class="van-dialog__content">
+        <view class="content">
+          <image src="https://b.yzcdn.cn/public_files/17ecbdf6e6e588eccd0318cc8f8815c2.png" />
+          <view class="prompt-title">立即完善资料</view>
+          <view class="prompt-label">完善资料尊享更多会员权益</view>
+        </view>
+        <view class="dialog-button">
+          <button class="benefit-btn van-button van-button--danger van-button--normal">
+            <view class="van-button__text">去完善</view>
+          </button>
+        </view>
+        <view class="operator-bar">
+          <view>以后再说</view>
+        </view>
+      </view>
+      <view class="van-hairline--top van-dialog__footer">
+
+      </view>
+    </view><!---->
+  </view>
+</view>

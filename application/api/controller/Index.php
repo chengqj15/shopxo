@@ -138,7 +138,7 @@ class Index extends Common
 		//类别
 		$params['is_home_recommended'] = 1;
         $params['pid'] = 0;
-        $category = GoodsService::GoodsCategoryList($params);
+        $category = GoodsService::GoodsCategoryApiIndex($params);
         $result['category'] = $category;
 
 		// 返回数据

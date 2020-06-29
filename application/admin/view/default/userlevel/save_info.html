@@ -1,0 +1,98 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+	<div class="content">
+		<!-- form start -->
+		<form class="am-form form-validation view-save" action="{{:MyUrl('admin/userlevel/save')}}" method="POST" request-type="ajax-url" request-value="{{:MyUrl('admin/userlevel/index', $params)}}">
+			<legend>
+				<span class="am-text-default">
+					{{if empty($data['id'])}}
+						会员等级添加
+					{{else /}}
+						会员等级编辑
+					{{/if}}
+				</span>
+				<a href="{{:MyUrl('admin/userlevel/index', $params)}}" class="am-fr am-text-sm am-margin-top-xs am-icon-mail-reply"> 返回</a>
+			</legend>
+			<div class="am-form-group">
+				<label>等级名称</label>
+				<input type="text" name="name" class="am-radius" placeholder="等级名称" data-validation-message="等级名称 2~30 个字符" {{if !empty($data)}} value="{{$data.name}}"{{/if}} />
+			</div>
+			<div class="am-form-group">
+				<label>等级</label>
+				<input type="number" name="grade" class="am-radius" placeholder="等级" data-validation-message="等级格式错误" {{if !empty($data)}} value="{{$data.grade}}"{{/if}} />
+				<label>成长值（等级门槛)</label>
+				<input type="number" name="point" class="am-radius" placeholder="成长值" data-validation-message="成长值格式错误" {{if !empty($data)}} value="{{$data.point}}"{{/if}} />
+				<label>购买价格</label>
+				<input type="number" name="money" class="am-radius" placeholder="购买价格" data-validation-message="购买价格格式错误" {{if !empty($data)}} value="{{$data.money}}"{{/if}} />
+			</div>
+			<div class="am-form-group">
+				<label>是否为永久</label>
+				<div>
+					<label class="am-radio-inline am-margin-right-sm">
+						<input type="radio" name="is_forever" value="1" {{if isset($data['is_forever']) and $data['is_forever'] eq 1}}checked="checked"{{/if}} data-am-ucheck /> 是
+					</label>
+					<label class="am-radio-inline am-margin-right-sm">
+						<input type="radio" name="is_forever" value="0" {{if !isset($data['is_forever']) or $data['is_forever'] eq 0}}checked="checked"{{/if}} data-am-ucheck /> 否
+					</label>
+				</div>
+			</div>
+			<div class="am-form-group">
+				<label>有效时间</label>
+				<input type="number" name="valid_date" class="am-radius" placeholder="有效时间" data-validation-message="有效时间格式错误" {{if !empty($data)}} value="{{$data.valid_date}}"{{/if}} />
+				<label>单位</label>
+				<div>
+					<label class="am-radio-inline am-margin-right-sm">
+						<input type="radio" name="valid_type" value="0" {{if isset($data['valid_type']) and $data['valid_type'] eq 0}}checked="checked"{{/if}} data-am-ucheck /> 天
+					</label>
+					<label class="am-radio-inline am-margin-right-sm">
+						<input type="radio" name="valid_type" value="2" {{if !isset($data['valid_type']) or $data['valid_type'] eq 2}}checked="checked"{{/if}} data-am-ucheck /> 月
+					</label>
+					<label class="am-radio-inline am-margin-right-sm">
+						<input type="radio" name="valid_type" value="1" {{if !isset($data['valid_type']) or $data['valid_type'] eq 1}}checked="checked"{{/if}} data-am-ucheck /> 年
+					</label>
+				</div>
+			</div>
+
+			<div class="am-form-group">
+				<label>享受折扣</label>
+				<input type="number" name="discount" class="am-radius" placeholder="享受折扣" data-validation-message="享受折扣格式错误" {{if !empty($data)}} value="{{$data.discount}}"{{/if}} />
+				<label>免服务费次数</label>
+				<input type="number" name="free_package_count" class="am-radius" placeholder="免服务费次数" data-validation-message="免服务费次数格式错误" {{if !empty($data)}} value="{{$data.free_package_count}}"{{/if}} />
+			</div>
+			<div class="am-form-group am-form-file">
+				<label class="block">会员背景</label>
+				<ul class="plug-file-upload-view user-level-image-images-view" data-form-name="image" data-max-number="1" data-dialog-type="images">
+					{{if !empty($data['image'])}}
+					<li>
+						<input type="hidden" name="image" value="{{$data.image}}" />
+						<img src="{{$data.image}}" />
+						<i>×</i>
+					</li>
+					{{/if}}
+				</ul>
+				<div class="plug-file-upload-submit" data-view-tag="ul.user-level-image-images-view">+上传图片</div>
+			</div>
+
+			<!-- 是否显示 -- >
+			{{include file="lib/is_show" /}}
+
+			<div class="am-form-group">
+				<label>等级说明</label>
+				<input type="text" name="explain" class="am-radius" placeholder="等级说明" data-validation-message="请填写说明" {{if !empty($data)}} value="{{$data.explain}}"{{/if}} />
+			</div>
+
+			<div class="am-form-group am-form-group-refreshing">
+				<input type="hidden" name="id" {{if !empty($data)}} value="{{$data.id}}"{{/if}} />
+				<button type="submit" class="am-btn am-btn-primary am-radius btn-loading-example am-btn-sm am-btn-block" data-am-loading="{loadingText:'处理中...'}">保存</button>
+			</div>
+		</form>
+        <!-- form end -->
+	</div>
+</div>
+<!-- right content end  -->
+		
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

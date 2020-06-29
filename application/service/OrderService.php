@@ -22,6 +22,7 @@ use app\service\ExpressService;
 use app\service\ResourcesService;
 use app\service\PayLogService;
 use app\service\UserService;
+use app\service\UserLevelService;
 
 /**
  * 订单服务层
@@ -527,6 +528,7 @@ class OrderService
             if(self::OrderHistoryAdd($params['order']['id'], 2, $params['order']['status'], '支付', 0, '系统'))
             {
                 // 库存扣除
+                $upd_data['order_model'] = $params['order']['order_model'];
                 $ret = BuyService::OrderInventoryDeduct(['order_id'=>$params['order']['id'], 'order_data'=>$upd_data]);
                 if($ret['code'] != 0)
                 {
@@ -548,7 +550,7 @@ class OrderService
                 ]));
 
                 // 虚拟商品自动触发发货操作
-                if($params['order']['order_model'] == 3)
+                if(in_array($params['order']['order_model'], [3, 98, 99]))
                 {
                     self::OrderDelivery([
                         'id'                => $params['order']['id'],
@@ -1152,7 +1154,7 @@ class OrderService
             $status_text = lang('common_order_user_status')[$order['status']]['name'];
             return DataReturn('状态不可操作['.$status_text.']', -1);
         }
-        $extraction_code = "";
+        $extraction_code = "00";
 
         // 订单模式
         switch($order['order_model'])
@@ -1218,12 +1220,24 @@ class OrderService
         if(Db::name('Order')->where($where)->update($upd_data))
         {
             // 库存扣除
+            $upd_data['order_model'] = $order['order_model'];
             $ret = BuyService::OrderInventoryDeduct(['order_id'=>$order['id'], 'order_data'=>$upd_data]);
             if($ret['code'] != 0)
             {
                 // 事务回滚
                 Db::rollback();
                 return DataReturn($ret['msg'], -10);
+            }
+
+            if($order['order_model'] == 99){
+                //会员卡发货
+                $ret = BuyService::LevelOrderDelivery(['order_id'=>$order['id'], 'order_data'=>$upd_data]);
+                if($ret['code'] != 0)
+                {
+                    // 事务回滚
+                    Db::rollback();
+                    return DataReturn($ret['msg'], -10);
+                }
             }
 
             // 用户消息
@@ -1236,11 +1250,14 @@ class OrderService
 
             // 提交事务
             Db::commit();
-            try{
-                self::SendPickupNotice($order, $extraction_code);
-            }catch(Exception $e){
-                Log::write('SendSubscribeMessage error:' . $e->getMessage());
+            if($extraction_code != "00"){
+                try{
+                    self::SendPickupNotice($order, $extraction_code);
+                }catch(Exception $e){
+                    Log::write('SendSubscribeMessage error:' . $e->getMessage());
+                }
             }
+            
             
             return DataReturn('发货成功', 0);
         }
@@ -1462,6 +1479,7 @@ class OrderService
         if(Db::name('Order')->where($where)->update($upd_data))
         {
             // 库存扣除
+            $upd_data['order_model'] = $order['order_model'];
             $ret = BuyService::OrderInventoryDeduct(['order_id'=>$params['id'], 'order_data'=>$upd_data]);
             if($ret['code'] != 0)
             {

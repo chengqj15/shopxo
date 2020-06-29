@@ -66,8 +66,70 @@ class GoodsService
         }
 
         // 获取分类
-        $params['where'] = ['pid'=>0, 'is_enable'=>1];
-        $data = self::GoodsCategory($params);
+        // $params['where'] = ['pid'=>0, 'is_enable'=>1];
+        $params['where'] = ['pid'=>0];
+        $data = self::GoodsCategoryTmp($params);
+
+        // 存储缓存
+        cache($key, $data);
+
+        return $data;
+    }
+
+    public static function GoodsCategoryListTmp($where = [])
+    {
+        $field = 'id,pid,icon,name,vice_name,describe,bg_color,big_images,sort,is_home_recommended,seo_title,seo_keywords,seo_desc';
+        $data = Db::name('GoodsCategory')->field($field)->where($where)->order('sort asc')->select();
+        return self::GoodsCategoryDataDealWith($data);
+    }
+
+    public static function GoodsCategoryTmp($params = [])
+    {
+        // 获取分类
+        $where = empty($params['where']) ? ['pid'=>0, 'is_enable'=>1] : $params['where'];
+        $data = self::GoodsCategoryListTmp($where);
+        if(!empty($data))
+        {
+            foreach($data as &$v)
+            {
+                $where['pid'] = $v['id'];
+                $v['items'] = self::GoodsCategoryListTmp($where);
+                if(!empty($v['items']))
+                {
+                    // 一次性查出所有二级下的三级、再做归类、避免sql连接超多
+                    $where['pid'] = array_column($v['items'], 'id');
+                    $items = self::GoodsCategoryListTmp($where);
+                    if(!empty($items))
+                    {
+                        foreach($v['items'] as &$vs)
+                        {
+                            foreach($items as $vss)
+                            {
+                                if($vs['id'] == $vss['pid'])
+                                {
+                                    $vs['items'][] = $vss;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $data;
+    }
+
+    public static function GoodsCategoryApiIndex($params = [])
+    {
+        // 从缓存获取
+        $key = 'cache_goods_category_api_index_key';
+        $data = cache($key);
+        if(!empty($data))
+        {
+            return $data;
+        }
+
+        // 获取分类
+        $data = self::GoodsCategoryList($params);
 
         // 存储缓存
         cache($key, $data);

@@ -1,0 +1,70 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+	<div class="content">
+		<!-- form start -->
+		<form class="am-form form-validation view-save" action="{{:MyUrl('admin/userlevel/saveleveltask')}}" method="POST" request-type="ajax-url" request-value="{{:MyUrl('admin/userlevel/tasklist', $params)}}">
+			<legend>
+				<span class="am-text-default">
+					{{if empty($data['id'])}}
+						会员任务添加
+					{{else /}}
+						会员任务编辑
+					{{/if}}
+				</span>
+				<a href="{{:MyUrl('admin/userlevel/tasklist', $params)}}" class="am-fr am-text-sm am-margin-top-xs am-icon-mail-reply"> 返回</a>
+			</legend>
+			<div class="am-form-group">
+				<label>任务</label>
+				<select name="task_type" class="am-radius chosen-select" required>
+                    {{foreach $task_type as $v}}
+                        <option value="{{$v.value}}" {{if isset($data['task_type']) and $data['task_type'] eq $v['value']}}selected{{/if}}>{{$v.label}}</option>
+                    {{/foreach}}
+                </select>
+			</div>
+
+			<div class="am-form-group">
+				<label>数量</label>
+				<input type="number" name="number" class="am-radius" placeholder="数量限制" data-validation-message="请填写数量" {{if !empty($data)}} value="{{$data.number}}"{{/if}} />
+			</div>
+
+			<div class="am-form-group">
+				<label>任务说明</label>
+				<input type="text" name="illustrate" class="am-radius" placeholder="任务说明" data-validation-message="请填写说明" {{if !empty($data)}} value="{{$data.illustrate}}"{{/if}} />
+			</div>
+
+			<div class="am-form-group">
+				<label>排序</label>
+				<input type="number" name="sort" class="am-radius" placeholder="排序" data-validation-message="排序" {{if !empty($data)}} value="{{$data.sort}}"{{/if}} />
+			</div>
+
+			<!-- 是否显示 -- >
+			{{include file="lib/is_show" /}}
+
+			<div class="am-form-group">
+				<label>是否必须</label>
+				<div>
+					<label class="am-radio-inline am-margin-right-sm">
+						<input type="radio" name="is_must" value="1" {{if isset($data['is_must']) and $data['is_must'] eq 1}}checked="checked"{{/if}} data-am-ucheck /> 是
+					</label>
+					<label class="am-radio-inline am-margin-right-sm">
+						<input type="radio" name="is_must" value="0" {{if !isset($data['is_must']) or $data['is_must'] eq 0}}checked="checked"{{/if}} data-am-ucheck /> 否
+					</label>
+				</div>
+			</div>
+
+			<div class="am-form-group am-form-group-refreshing">
+				<input type="hidden" name="id" {{if !empty($data)}} value="{{$data.id}}"{{/if}} />
+				<input type="hidden" name="level_id" value="{{$params.level_id}}"/>
+				<button type="submit" class="am-btn am-btn-primary am-radius btn-loading-example am-btn-sm am-btn-block" data-am-loading="{loadingText:'处理中...'}">保存</button>
+			</div>
+		</form>
+        <!-- form end -->
+	</div>
+</div>
+<!-- right content end  -->
+		
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

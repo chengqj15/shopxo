@@ -1,0 +1,82 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <legend>
+            <span class="am-text-default">
+                会员等级任务
+            </span>
+            <a href="{{:MyUrl('admin/userlevel/index', $params)}}" class="am-fr am-text-sm am-margin-top-xs am-icon-mail-reply"> 返回</a>
+        </legend>
+
+        <form class="am-form form-validation form-search" method="post" action="{{:MyUrl('admin/userlevel/tasklist')}}" request-type="form">
+            <div class="thin">
+                <div class="am-input-group am-input-group-sm am-fl so">
+                    <input type="hidden" name="id" {{if !empty($data)}} value="{{$data.id}}"{{/if}} />
+                    <input type="text" autocomplete="off" name="keywords" class="am-radius" placeholder="会员等级名称" value="{{if !empty($params.keywords)}}{{$params.keywords}}{{/if}}" />
+                    <span class="am-input-group-btn">
+                        <button class="am-btn am-btn-default am-radius" type="submit" data-am-loading="{spinner:'circle-o-notch', loadingText:'搜索中...'}">搜索</button>
+                    </span>
+                </div>
+            </div>
+        </form>
+
+        <!-- top operation start -->
+        <div class="am-g am-margin-top-sm">
+            <a href="{{:MyUrl('admin/userlevel/taskinfo', $params)}}" class="am-btn am-btn-secondary am-radius am-btn-xs am-icon-plus"> 添加会员任务</a>
+        </div>
+
+        <table class="am-table am-table-striped am-table-hover am-text-middle am-margin-top-sm am-margin-left-xs">
+            <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>等级名称</th>
+                    <th class="am-hide-sm-only">任务名称</th>
+                    <th class="am-hide-sm-only">排序</th>
+                    <th class="am-hide-sm-only">是否使用</th>
+                    <th class="am-hide-sm-only">务必达成</th>
+                    <th class="am-hide-sm-only">任务说明</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{if !empty($data_list)}}
+                    {{foreach $data_list as $v}}
+                        <tr id="data-list-{{$v.id}}">
+                            <td>{{$v.id}}</td>
+                            <td class="am-hide-sm-only">
+                                {{$v.level_name}}
+                            </td>
+                            <td class="am-hide-sm-only">
+                                {{$v.name}}
+                            </td>
+                            <td class="am-hide-sm-only">
+                                {{$v.sort}}
+                            </td>
+                            <td class="am-hide-sm-only">
+                                {{$v.is_show}}
+                            </td>
+                            <td>
+                                {{$v.is_must}}
+                            </td>
+                            <td>
+                                {{$v.illustrate}}
+                            </td>
+                            <td class="view-operation">
+                                <a href="{{:MyUrl('admin/userlevel/taskinfo', array_merge($params,array('id'=>$v['id'])))}}">
+                                    <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-edit"> 编辑</button>
+                                </a>
+                                <button class="am-btn am-btn-danger am-btn-xs am-radius am-icon-trash-o submit-delete" data-url="{{:MyUrl('admin/userlevel/deleteleveltask')}}" data-id="{{$v.id}}"> 删除</button>
+                            </td>
+                        </tr>
+                    {{/foreach}}
+                {{/if}}
+            </tbody>
+        </table>
+        {{if empty($data_list)}}
+            <div class="table-no"><i class="am-icon-warning"></i> 没有相关数据</div>
+        {{/if}}
+
+    </div>
+</div>

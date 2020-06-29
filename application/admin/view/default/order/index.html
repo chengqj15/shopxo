@@ -200,7 +200,7 @@
     								电话：{{$v.address_data.contact_tel}}<br />
     								店名：{{$v.address_data.alias}}<br />
     								取货时间：{{$v.address_data.target_date}}<br />
-    								<button class="am-btn am-btn-primary am-btn-xs am-radius am-icon-check-circle-o am-btn-block submit-ajax" data-url="{{:MyUrl('admin/order/sendnotice')}}" data-id="{{$v.id}}" data-user-id="{{$v.user_id}}" > 补发通知</button>
+    								<button class="am-btn am-btn-primary am-btn-xs am-radius am-icon-check-circle-o am-btn-block submit-ajax" data-url="{{:MyUrl('admin/order/sendnotice')}}" data-id="{{$v.id}}" data-user-id="{{$v.user_id}}" > 取货提醒</button>
                                 {{else /}}
                                     <span class="cr-ddd">无信息</span>
                                 {{/if}}

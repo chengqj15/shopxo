@@ -16,6 +16,8 @@ use app\service\GoodsService;
 use app\service\UserService;
 use app\service\ResourcesService;
 use app\service\ConfigService;
+use app\service\UserLevelService;
+use app\service\SystemUserLevel;
 
 /**
  * 购买服务层
@@ -376,6 +378,77 @@ class BuyService
     }
 
     /**
+     * 下订单 - 购买卡/券
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-09-21
+     * @desc    description
+     * @param   [array]          $params [输入参数]
+     */
+    public static function BuyCards($params = [])
+    {
+        // 请求参数
+        $p = [
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'stock',
+                'error_msg'         => '购买数量有误',
+            ],
+            [
+                'checked_type'      => 'min',
+                'key_name'          => 'stock',
+                'checked_data'      => 1,
+                'error_msg'         => '购买数量有误',
+            ],
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'goods_id',
+                'error_msg'         => '商品id有误',
+            ],
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'user',
+                'error_msg'         => '用户信息有误',
+            ],
+        ];
+        $ret = ParamsChecked($params, $p);
+        if($ret !== true)
+        {
+            return DataReturn($ret, -1);
+        }
+
+        $level = SystemUserLevel::getSytemList(['id' => intval($params['goods_id'])]);
+        if($level['code'] != 0 || empty($level['data']))
+        {
+            return DataReturn('invalid parameter', -1);
+        }
+        $ret = [
+            'code' => 0,
+            'data' => [
+                [
+                    'id' => intval($params['goods_id']),
+                    'goods_id' => intval($params['goods_id']),
+                    'title' => $level['data'][0]['name'],
+                    'images' => '',
+                    'grade' => $level['data'][0]['grade'],
+                    'spec' => '',
+                    'spec_coding' => '',
+                    'spec_barcode' => '',
+                    'spec_weight' => 0,
+                    'stock' => $params['stock'],
+                    'model' => $level['data'][0]['grade'],
+                    'original_price' => $level['data'][0]['money'],
+                    'price' => $level['data'][0]['money'],
+                    'total_price' => $level['data'][0]['money']
+                ]
+            ]
+        ];
+
+        return $ret;
+    }
+
+    /**
      * 下订单 - 正常购买
      * @author   Devil
      * @blog    http://gong.gg/
@@ -588,6 +661,9 @@ class BuyService
         {
             switch($params['buy_type'])
             {
+                case 'card' :
+                    $ret = BuyService::BuyCards($params);
+                    break;
                 // 正常购买
                 case 'goods' :
                     $ret = BuyService::BuyGoods($params);
@@ -614,7 +690,11 @@ class BuyService
 
             // 站点模式 0销售, 2自提, 4销售+自提, 则其它正常模式
             $common_site_type = MyC('common_site_type', 0, true);
-            $site_model = ($common_site_type == 4) ? (isset($params['site_model']) ? intval($params['site_model']) : 0) : $common_site_type;
+            $site_model = isset($params['site_model']) ? intval($params['site_model']) : 0;
+            if(!in_array($site_model, [98,99]))
+            {
+                $site_model = ($common_site_type == 4) ?  $site_model : $common_site_type;
+            }
 
             // 数据处理
             $address = null;
@@ -673,7 +753,15 @@ class BuyService
             $service_fee_ratio = MyC('common_order_service_fee_ratio', 0, true);
             $service_fee_upper_limit = MyC('common_order_service_fee_upper_limit', 0, true);
 
-            $service_fee = min($total_price * $service_fee_ratio / 100, $service_fee_upper_limit);
+            if($site_model == 3)
+            {
+                $service_fee = 0;
+            }
+            else
+            {
+                $service_fee = min($total_price * $service_fee_ratio / 100, $service_fee_upper_limit);
+            }
+
             $actual_price = $total_price + $service_fee;
 
 
@@ -765,6 +853,40 @@ class BuyService
         return $ret;
     }
 
+        /**
+     * 购买商品校验
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-09-26
+     * @desc    description
+     * @param   [array]          $params [输入参数]
+     */
+    public static function BuyCardsCheck($params = [])
+    {
+        // 请求参数
+        $p = [
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'goods',
+                'error_msg'         => '商品信息有误',
+            ]
+        ];
+        $ret = ParamsChecked($params, $p);
+        if($ret !== true)
+        {
+            return DataReturn($ret, -1);
+        }
+        if($params['site_model'] == 99){
+            //会员卡
+            $level = UserLevelService::getUserLevel($params['uid']);
+            if($level && $level['grade'] > $params['goods'][0]['grade']){
+                return DataReturn('invalid grade', -1);
+            }
+        }
+        return DataReturn('操作成功', 0);
+    }
+
     /**
      * 购买商品校验
      * @author   Devil
@@ -851,7 +973,12 @@ class BuyService
         }
 
         // 销售+自提, 用户自选站点类型
-        $site_model = ($common_site_type == 4) ? (isset($params['site_model']) ? intval($params['site_model']) : 0) : $common_site_type;
+        $site_model = isset($params['site_model']) ? intval($params['site_model']) : 0;
+        if(!in_array($site_model, [98,99]))
+        {
+            //非会员卡/优惠券销售
+            $site_model = ($common_site_type == 4) ? $site_model : $common_site_type;
+        }
 
         // 请求参数
         $p = [
@@ -901,7 +1028,13 @@ class BuyService
         {
             return $buy;
         }
-        $check = self::BuyGoodsCheck(['goods'=>$buy['data']['goods']]);
+        if(in_array($site_model, [98,99]))
+        {
+            $check = self::BuyCardsCheck(['goods'=>$buy['data']['goods'], 'site_model'=>$site_model, 'uid'=>$params['user']['id']]);
+        }else
+        {
+            $check = self::BuyGoodsCheck(['goods'=>$buy['data']['goods']]);
+        }
         if(!isset($check['code']) || $check['code'] != 0)
         {
             return $check;
@@ -966,7 +1099,11 @@ class BuyService
 
         // 订单添加
         $order_id = Db::name('Order')->insertGetId($order);
-        if($order_id > 0)
+        if($order_id <= 0){
+            Db::rollback();
+            return DataReturn('订单添加失败', -1);
+        }
+        else
         {
             foreach($buy['data']['goods'] as $k=>$v)
             {
@@ -1018,10 +1155,7 @@ class BuyService
                     }
                 }
             }
-        } else {
-            Db::rollback();
-            return DataReturn('订单添加失败', -1);
-        }
+        }  
 
         // 库存扣除
         if($order['status'] == 1)
@@ -1057,7 +1191,10 @@ class BuyService
         Db::commit();
 
         // 删除购物车
-        self::BuyCartDelete($params);
+        if(!in_array($site_model, [98,99]))
+        {
+            self::BuyCartDelete($params);
+        }
 
         // 获取数据库订单信息
         $order = Db::name('Order')->find($order_id);
@@ -1413,6 +1550,10 @@ class BuyService
         {
             return DataReturn('未开启扣除库存', 0);
         }
+        if(in_array($params['order_model'], [98,99]))
+        {
+            return DataReturn('卡券不需要扣除库存', 0);
+        }
 
         // 获取订单商品
         $order_detail = Db::name('OrderDetail')->field('id,goods_id,buy_number,spec')->where(['order_id'=>$params['order_id']])->select();
@@ -1472,6 +1613,60 @@ class BuyService
      * @desc    description
      * @param   [array]          $params [输入参数]
      */
+    public static function LevelOrderDelivery($params = []){
+        // 请求参数
+        $p = [
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'order_id',
+                'error_msg'         => '订单id有误',
+            ],
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'order_data',
+                'error_msg'         => '订单更新数据不能为空',
+            ],
+            [
+                'checked_type'      => 'is_array',
+                'key_name'          => 'order_data',
+                'error_msg'         => '订单更新数据有误',
+            ]
+        ];
+        $ret = ParamsChecked($params, $p);
+        if($ret !== true)
+        {
+            return DataReturn($ret, -1);
+        }
+        // 获取订单商品
+        $order_detail = Db::name('OrderDetail')->field('id,goods_id,buy_number,spec')->where(['order_id'=>$params['order_id']])->select();
+        if(!empty($order_detail))
+        {
+            foreach($order_detail as $v)
+            {
+                // 查看是否已扣除过库存,避免更改模式导致重复扣除
+                $temp = Db::name('UserLevelLog')->where(['order_no'=>$params['order_id'], 'level_id'=>$v['goods_id']])->find();
+                if(empty($temp))
+                {
+                    $ret = UserLevelService::setUserLevel($v['user_id'], $v['goods_id'], $params['order_id']);
+                    if($ret['code'] != 0){
+                        return $ret;
+                    }
+                }
+            }
+        }
+        return DataReturn('操作成功', 0);
+
+    }
+
+    /**
+     * 库存扣除
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-11-09
+     * @desc    description
+     * @param   [array]          $params [输入参数]
+     */
     public static function OrderInventoryDeduct($params = [])
     {
         // 请求参数
@@ -1503,6 +1698,10 @@ class BuyService
         if($common_is_deduction_inventory != 1)
         {
             return DataReturn('未开启扣除库存', 0);
+        }
+        if(in_array($params['order_data']['order_model'], [98,99]))
+        {
+            return DataReturn('卡券不需要扣除库存', 0);
         }
 
         // 扣除库存规则

@@ -14,6 +14,8 @@ use app\service\PaymentService;
 use app\service\OrderService;
 use app\service\GoodsCommentsService;
 use app\service\ConfigService;
+use app\service\BuyService;
+use think\facade\Log;
 
 /**
  * 我的订单
@@ -262,6 +264,33 @@ class Order extends Common
         $params['creator_name'] = $this->user['user_name_view'];
         $params['user_type'] = 'user';
         return OrderService::OrderDelete($params);
+    }
+
+    /**
+     * 订单立即支付
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-09-28
+     * @desc    description
+     */
+    public function InstantPay()
+    {
+        $params = $this->data_post;
+        $params['user'] = $this->user;
+        Log::write('InstantPay in params:' . json_encode($params));
+        $ret = BuyService::OrderInsert($params);
+        Log::write('InstantPay OrderInsert ret:' . json_encode($ret));
+        if(isset($ret['code']) && $ret['code'] == 0)
+        {
+            $params = [
+                'id' => $ret['data']['order']['id'],
+                'user' => $this->user
+            ];
+            $ret = OrderService::Pay($params);
+            Log::write('InstantPay Pay ret:' . json_encode($ret));
+        }
+        return $ret;
     }
 
 }
