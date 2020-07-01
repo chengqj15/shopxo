@@ -23,11 +23,13 @@ alter table s_order add column `biz_id` int NOT NULL DEFAULT 1 COMMENT '业务id
 --
 CREATE TABLE IF NOT EXISTS `s_user_level_info` (
   `id` int(11) NOT NULL DEFAULT '0' COMMENT '用户uid',
+  `level_no` varchar(24) NOT NULL DEFAULT '0' COMMENT '会员序号',
   `level_id` int(11) NOT NULL DEFAULT '0' COMMENT '等级vip',
   `grade` int(11) NOT NULL DEFAULT '0' COMMENT '会员等级',
   `begin_time` int(11) NOT NULL DEFAULT '0' COMMENT '获得时间',
   `valid_time` int(11) NOT NULL DEFAULT '0' COMMENT '过期时间',
   `level_value` int(11) NOT NULL DEFAULT '0' COMMENT '当前成长值',
+  `level_money` decimal(8,2) NOT NULL DEFAULT '0.00' COMMENT '购买金额',
   `level_type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=购买,0=成长值',
   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:禁止,1:正常',
   `mark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
@@ -39,13 +41,14 @@ CREATE TABLE IF NOT EXISTS `s_user_level_info` (
   UNIQUE KEY `id` (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户等级信息表' AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `s_user_level_value` (
+CREATE TABLE IF NOT EXISTS `s_user_level_value_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `uid` int(11) NOT NULL DEFAULT '0' COMMENT '用户uid',
   `delta_value` int(11) NOT NULL DEFAULT '0' COMMENT '变动值',
   `orginal_value` int(11) NOT NULL DEFAULT '0' COMMENT '原有值',
   `level_value` int(11) NOT NULL DEFAULT '0' COMMENT '当前成长值',
   `delta_type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '变动类型。1=购买,0=成长值',
+  `order_id` int(11) NOT NULL DEFAULT '0' COMMENT '购买订单id',
   `mark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
   `is_delete_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '是否已删除（0否, 大于0删除时间）',
   `add_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '添加时间',
@@ -54,17 +57,16 @@ CREATE TABLE IF NOT EXISTS `s_user_level_value` (
   UNIQUE KEY `id` (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户成长值信息表' AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `s_user_level` (
+CREATE TABLE IF NOT EXISTS `s_user_level_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `uid` int(11) NOT NULL DEFAULT '0' COMMENT '用户uid',
   `level_id` int(11) NOT NULL DEFAULT '0' COMMENT '等级vip',
   `grade` int(11) NOT NULL DEFAULT '0' COMMENT '会员等级',
-  `valid_time` int(11) NOT NULL DEFAULT '0' COMMENT '过期时间',
-  `is_forever` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否永久',
-  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:禁止,1:正常',
+  `origin_level_id` int(11) NOT NULL DEFAULT '0' COMMENT '原等级id',
+  `origin_grade` int(1) NOT NULL DEFAULT '0' COMMENT '原等级',
+  `type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=购买,0=成长值',
   `mark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
-  `remind` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已通知',
-  `discount` int(11) NOT NULL DEFAULT '0' COMMENT '享受折扣',
+  `order_id` int(11) NOT NULL DEFAULT '0' COMMENT '购买订单id',
   `is_delete_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '是否已删除（0否, 大于0删除时间）',
   `add_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '添加时间',
   `upd_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',

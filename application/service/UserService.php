@@ -1914,7 +1914,6 @@ class UserService
         {
             UserLevelService::initUserLevelInfo();
             Db::commit();
-            return DataReturn('新增成功', 0);
         } else {
             Db::rollback();
             return DataReturn('新增失败');

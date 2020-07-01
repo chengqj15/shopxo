@@ -70,22 +70,6 @@ class SystemUserLevel
     }
 
     /**
-     *
-     * @param $leval_id
-     * @param null $list
-     * @return bool
-     */
-    public static function getClear($leval_id,$list=null)
-    {
-        $list= $list === null ?  self::getLevelListAndGrade($leval_id,false) : $list;
-        foreach ($list as $item){
-            if($item['id'] == $leval_id) return $item['is_clear'];
-        }
-        return false;
-    }
-
-
-    /**
      * 获取当前vipid 的下一个会员id
      * @param $leval_id 当前用户的会员id
      * @return int|mixed
@@ -206,7 +190,7 @@ class SystemUserLevel
             return DataReturn('请输入有效时间');
         }
         $is_pay = isset($params['is_pay']) ? $params['is_pay'] : 0;
-        $money = isset($params['money']) ? intval($params['money']) : 0;
+        $money = isset($params['money']) ? $params['money'] : 0;
         if($is_pay && !$money) 
         {
             return DataReturn('请输入购买金额');

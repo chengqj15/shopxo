@@ -13,6 +13,7 @@ namespace app\plugins\coupon\api;
 use app\plugins\coupon\api\Common;
 use app\plugins\coupon\service\BaseService;
 use app\plugins\coupon\service\CouponService;
+use app\service\PaymentService;
 
 /**
  * 优惠劵
@@ -62,11 +63,13 @@ class Index extends Common
             'user'              => $this->user,
         ];
         $ret = CouponService::CouponList($coupon_params);
+        $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1, 'is_open_user'=>1]);
 
         // 返回数据
         $result = [
             'base'  => $base['data'],
             'data'  => $ret['data'],
+            'payment_list' => $payment_list,
         ];
         return DataReturn('处理成功', 0, $result);
     }

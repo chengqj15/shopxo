@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS `{PREFIX}plugins_coupon` (
   KEY `sort` (`sort`)
 ) ENGINE=InnoDB DEFAULT CHARSET={CHARSET} ROW_FORMAT=DYNAMIC COMMENT='优惠劵 - 应用';
 
-
+alter table s_plugins_coupon add column `buy_amount` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '购买金额 | 0或空代表不需要付费购买' after `use_value_ids`;
+alter table s_plugins_coupon add column `is_paid` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否购买（0否，1是）' after `use_value_ids`;
 
 # 用户优惠劵表
 CREATE TABLE IF NOT EXISTS `{PREFIX}plugins_coupon_user` (
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `{PREFIX}plugins_coupon_user` (
   `is_expire` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否已过期（0否，1是）',
   `is_use` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否已使用（0否，1是）',
   `use_order_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '使用关联的订单id',
+  `buy_order_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '购买的订单id',
   `use_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '使用时间',
   `add_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '添加时间',
   `upd_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',

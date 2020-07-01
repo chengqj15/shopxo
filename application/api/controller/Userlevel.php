@@ -27,10 +27,10 @@ class UserLevel extends Common
         // 参数
         $params = $this->data_post;
         $params['user'] = $this->user;
-        // 支付方式
-        $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1, 'is_open_user'=>1]);
         $ret = UserLevelService::getLevelList($params);
         if($ret['code'] == 0){
+            // 支付方式
+            $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1, 'is_open_user'=>1]);
             $ret['data']['payment_list'] = $payment_list;
         }
         return $ret;

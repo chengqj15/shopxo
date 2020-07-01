@@ -280,7 +280,6 @@ class Order extends Common
         $params['user'] = $this->user;
         Log::write('InstantPay in params:' . json_encode($params));
         $ret = BuyService::OrderInsert($params);
-        Log::write('InstantPay OrderInsert ret:' . json_encode($ret));
         if(isset($ret['code']) && $ret['code'] == 0)
         {
             $params = [

@@ -18,6 +18,7 @@ use app\service\ResourcesService;
 use app\service\ConfigService;
 use app\service\UserLevelService;
 use app\service\SystemUserLevel;
+use app\plugins\coupon\service\CouponService;
 
 /**
  * 购买服务层
@@ -431,6 +432,7 @@ class BuyService
                     'goods_id' => intval($params['goods_id']),
                     'title' => $level['data'][0]['name'],
                     'images' => '',
+                    'images_old' => '',
                     'grade' => $level['data'][0]['grade'],
                     'spec' => '',
                     'spec_coding' => '',
@@ -441,6 +443,80 @@ class BuyService
                     'original_price' => $level['data'][0]['money'],
                     'price' => $level['data'][0]['money'],
                     'total_price' => $level['data'][0]['money']
+                ]
+            ]
+        ];
+
+        return $ret;
+    }
+
+        /**
+     * 下订单 - 购买卡/券
+     * @author   Devil
+     * @blog    http://gong.gg/
+     * @version 1.0.0
+     * @date    2018-09-21
+     * @desc    description
+     * @param   [array]          $params [输入参数]
+     */
+    public static function BuyCoupons($params = [])
+    {
+        // 请求参数
+        $p = [
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'stock',
+                'error_msg'         => '购买数量有误',
+            ],
+            [
+                'checked_type'      => 'min',
+                'key_name'          => 'stock',
+                'checked_data'      => 1,
+                'error_msg'         => '购买数量有误',
+            ],
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'goods_id',
+                'error_msg'         => '商品id有误',
+            ],
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'user',
+                'error_msg'         => '用户信息有误',
+            ],
+        ];
+        $ret = ParamsChecked($params, $p);
+        if($ret !== true)
+        {
+            return DataReturn($ret, -1);
+        }
+        $where = ['id' => intval($params['goods_id'])];
+        $level = CouponService::CouponList(['where' => $where]);
+        if($level['code'] != 0 || empty($level['data']))
+        {
+            return DataReturn('invalid parameter', -1);
+        }
+        if($level['data'][0]['is_operable'] == 0){
+            return DataReturn('The coupon is not avaiable', -1);
+        }
+        $ret = [
+            'code' => 0,
+            'data' => [
+                [
+                    'id' => intval($params['goods_id']),
+                    'goods_id' => intval($params['goods_id']),
+                    'title' => $level['data'][0]['name'],
+                    'images' => '',
+                    'images_old' => '',
+                    'spec' => '',
+                    'spec_coding' => '',
+                    'spec_barcode' => '',
+                    'spec_weight' => 0,
+                    'stock' => $params['stock'],
+                    'model' => $level['data'][0]['type'],
+                    'original_price' => $level['data'][0]['buy_amount'],
+                    'price' => $level['data'][0]['buy_amount'],
+                    'total_price' => $level['data'][0]['buy_amount']
                 ]
             ]
         ];
@@ -663,6 +739,9 @@ class BuyService
             {
                 case 'card' :
                     $ret = BuyService::BuyCards($params);
+                    break;
+                case 'coupon' :
+                    $ret = BuyService::BuyCoupons($params);
                     break;
                 // 正常购买
                 case 'goods' :
@@ -1613,7 +1692,7 @@ class BuyService
      * @desc    description
      * @param   [array]          $params [输入参数]
      */
-    public static function LevelOrderDelivery($params = []){
+    public static function CardOrderDelivery($params = []){
         // 请求参数
         $p = [
             [
@@ -1638,20 +1717,28 @@ class BuyService
             return DataReturn($ret, -1);
         }
         // 获取订单商品
-        $order_detail = Db::name('OrderDetail')->field('id,goods_id,buy_number,spec')->where(['order_id'=>$params['order_id']])->select();
+        $order_detail = Db::name('OrderDetail')->field('id,user_id,goods_id,buy_number,spec')->where(['order_id'=>$params['order_id']])->select();
         if(!empty($order_detail))
         {
             foreach($order_detail as $v)
             {
-                // 查看是否已扣除过库存,避免更改模式导致重复扣除
-                $temp = Db::name('UserLevelLog')->where(['order_no'=>$params['order_id'], 'level_id'=>$v['goods_id']])->find();
-                if(empty($temp))
-                {
-                    $ret = UserLevelService::setUserLevel($v['user_id'], $v['goods_id'], $params['order_id']);
+                if($params['order_data']['order_model'] == 99){
+                    // 查看是否已扣除过库存,避免更改模式导致重复扣除
+                    $temp = Db::name('UserLevelLog')->where(['order_no'=>$params['order_id'], 'level_id'=>$v['goods_id']])->find();
+                    if(empty($temp))
+                    {
+                        $ret = UserLevelService::setUserLevel($v['user_id'], $v['goods_id'], $params['order_id']);
+                        if($ret['code'] != 0){
+                            return $ret;
+                        }
+                    }
+                }elseif($params['order_data']['order_model'] == 98){
+                    // 查看是否已扣除过库存,避免更改模式导致重复扣除
+                    $ret = CouponService::UserBuyCoupon(['coupon_id' => $v['goods_id'], 'uid' => $v['user_id'], 'order_id' => $params['order_id']]);
                     if($ret['code'] != 0){
                         return $ret;
                     }
-                }
+                } 
             }
         }
         return DataReturn('操作成功', 0);

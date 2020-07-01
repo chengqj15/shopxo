@@ -1229,9 +1229,9 @@ class OrderService
                 return DataReturn($ret['msg'], -10);
             }
 
-            if($order['order_model'] == 99){
+            if(in_array($order['order_model'], [98,99])){
                 //会员卡发货
-                $ret = BuyService::LevelOrderDelivery(['order_id'=>$order['id'], 'order_data'=>$upd_data]);
+                $ret = BuyService::CardOrderDelivery(['order_id'=>$order['id'], 'order_data'=>$upd_data]);
                 if($ret['code'] != 0)
                 {
                     // 事务回滚

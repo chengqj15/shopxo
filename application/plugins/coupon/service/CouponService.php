@@ -165,6 +165,15 @@ class CouponService
                     'error_msg'         => '折扣率有误',
                 ];
             }
+            if(isset($params['is_paid']) && $params['is_paid'] == 1)
+            {
+                $p[] = [
+                    'checked_type'      => 'min',
+                    'key_name'          => 'buy_amount',
+                    'checked_data'      => 0,
+                    'error_msg'         => '购买金额不能小于等于0',
+                ];
+            }
         }
 
         // 使用限制值
@@ -204,6 +213,7 @@ class CouponService
             $data['use_value_ids'] = $use_value_ids;
             $data['discount_value'] = ($params['type'] == 1) ? PriceNumberFormat($params['discount_rate']) : PriceNumberFormat($params['discount_price']);
             $data['limit_send_count'] = isset($params['limit_send_count']) ? intval($params['limit_send_count']) : 0;
+            $data['is_paid'] = isset($params['is_paid']) ? intval($params['is_paid']) : 0;
             $data['buy_amount'] = PriceNumberFormat($params['buy_amount']);
         }
 
@@ -282,6 +292,9 @@ class CouponService
                     {
                         $v['is_operable'] = 0;
                         $v['is_operable_name'] = '已领取';
+                        if(isset($v['is_paid']) && $v['is_paid'] == 1){
+                            $v['is_operable_name'] = '已购买';
+                        }
                     }
                 }
 
@@ -578,6 +591,7 @@ class CouponService
         {
             return DataReturn($ret, -1);
         }
+        $buy_order_id = isset($params['buy_order_id']) ? $params['buy_order_id'] : '';
 
         // 获取优惠劵
         $coupon = Db::name('PluginsCoupon')->find(intval($params['coupon_id']));
@@ -606,6 +620,12 @@ class CouponService
         if(isset($params['is_regster_send']) && $params['is_regster_send'] == 1 && $coupon['is_regster_send'] != 1)
         {
             return DataReturn('不支持注册发放['.$coupon['name'].']', -1);
+        }
+
+        // 用户购买
+        if(isset($params['is_paid']) && $params['is_paid'] == 1 && $coupon['is_paid'] != 1)
+        {
+            return DataReturn('未开放购买['.$coupon['name'].']', -1);
         }
 
         // 是否已过期
@@ -659,6 +679,7 @@ class CouponService
                 'time_start'    => $time_start,
                 'time_end'      => $time_end,
                 'add_time'      => $add_time,
+                'buy_order_id'  => $buy_order_id,
             ];
         }
 
@@ -719,6 +740,50 @@ class CouponService
             'user_ids'          => [$user['id']],
             'coupon_id'         => $coupon_id,
             'is_user_receive'   => 1,
+        ];
+        $ret = self::CouponSend($coupon_params);
+        if($ret['code'] == 0)
+        {
+            return DataReturn('领取成功', 0);
+        }
+        return $ret;
+    }
+
+    public static function UserBuyCoupon($params = [])
+    {
+        // 优惠劵id是否正常
+        if(empty($params['coupon_id']))
+        {
+            return DataReturn('优惠劵id有误', -1);
+        }
+        $uid = $params['uid'];
+        $buy_order_id = $params['order_id'];
+        $coupon_id = intval($params['coupon_id']);
+
+        // 是否允许重复领取
+        // 是否已领取过
+        $temp = Db::name('PluginsCouponUser')->where(['coupon_id'=>$coupon_id, 'user_id'=>$uid, 'buy_order_id'=>$buy_order_id])->find();
+        if(!empty($temp))
+        {
+            return DataReturn('购买成功', 0);
+        }
+
+        $base = BaseService::BaseConfig();
+        if(!isset($base['data']['is_repeat_receive']) || $base['data']['is_repeat_receive'] != 1)
+        {
+            $temp = Db::name('PluginsCouponUser')->where(['coupon_id'=>$coupon_id, 'user_id'=>$uid])->find();
+            if(!empty($temp))
+            {
+                return DataReturn('该优惠劵已购买过，请勿重复购买', -1);
+            }
+        }
+
+        // 领取优惠劵
+        $coupon_params = [
+            'user_ids'          => [$uid],
+            'coupon_id'         => $coupon_id,
+            'is_paid'   => 1,
+            'buy_order_id' => $buy_order_id,
         ];
         $ret = self::CouponSend($coupon_params);
         if($ret['code'] == 0)

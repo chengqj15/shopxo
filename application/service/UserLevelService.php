@@ -52,7 +52,7 @@ class UserLevelService
         return $model->where("{$alias}status", 1)->where("{$alias}is_delete_time", 0);
     }
 
-    public static function setUserLevelInternal($levelInfo, $level, $type=0, $order_no=''){
+    public static function setUserLevelInternal($levelInfo, $level, $type=0, $order_id=''){
 
         $valueLog = false;
 
@@ -63,7 +63,7 @@ class UserLevelService
             'origin_level_id' => $levelInfo['level_id'],
             'origin_grade' => $levelInfo['grade'],
             'type' => $type,
-            'order_no' => $order_no,
+            'order_id' => $order_id,
             'add_time' => time()
         ];
     
@@ -82,6 +82,7 @@ class UserLevelService
                 'status' => 1,
                 'grade' => $level['grade'],
                 'level_id' => $level_id,
+                'level_money' => $level['money'],
                 'valid_time'=>self::getValidTime($level)
             ];
             
@@ -89,18 +90,18 @@ class UserLevelService
             $levelLog['mark'] = '有效期延长 到 ' . $data['valid_time'];
 
             $delta_value = $level['point'] - $levelInfo['level_value'];
-            if(（$delta_value > 0 && $up） || （$delta_value < 0 && !$up){
+            if(($delta_value > 0 && $up) || ($delta_value < 0 && !$up)){
                 //升级 或者 降级
                 $orginal_value = $levelInfo['level_value'];
                 $data['level_value'] = $level['point'];
-                $mark = $up ? '会员等级升级到:'. $level['grade'] : '会员等级降级到:'. $level['grade']
+                $mark = $up ? '会员等级升级到:'. $level['grade'] : '会员等级降级到:'. $level['grade'];
                 $valueLog = [
                     'uid' => $uid,
                     'delta_value' => $delta_value,
                     'orginal_value' => $orginal_value,
                     'level_value' => $level['point'],
                     'delta_type' => $type,
-                    'order_no' => $order_no,
+                    'order_id' => $order_id,
                     'mark' => $mark,
                     'add_time' => time()
                 ];
@@ -142,13 +143,13 @@ class UserLevelService
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public static function setUserLevel($uid, $level_id, $order_no){
+    public static function setUserLevel($uid, $level_id, $order_id){
         $level = SystemUserLevel::getSytemList(['id'=>$level_id]);
         if(!$level) {
             return DataReturn('invalid level', -1);
         }
         $levelInfo = self::getUserLevel($uid);
-        return self::setUserLevelInternal($levelInfo, $level, $order_no);
+        return self::setUserLevelInternal($levelInfo, $level, $order_id);
     }
 
     /**
@@ -163,16 +164,17 @@ class UserLevelService
     public static function getUserLevel($uid)
     {
         // if ($grade) $model = $model->where('grade', '<', $grade);
-        $levelInfo = self::valiWhere()->where('id', $uid)->field('id, level_id, grade, begin_time, valid_time, level_value, level_type, status')->find();
-        if (!$levelInfo) 
+        $levelInfo = self::valiWhere()->where('id', $uid)->field('id, level_no, level_money, level_id, grade, begin_time, valid_time, level_value, level_type, status')->find();
+        if (!$levelInfo || $levelInfo['level_id'] == 0) 
         {
-            return self::initUserLevelInfo($uid)
+            Log::write('getUserLevel init user level');
+            return self::initUserLevelInfo($uid);
         }
-        if ($levelInfo->valid_time == -1) 
+        if ($levelInfo['valid_time'] == -1) 
         {//永久有效
             return $levelInfo;
         }
-        if ($levelInfo->valid_time != 0 && time() > $levelInfo->valid_time){
+        if ($levelInfo['valid_time'] != 0 && time() > $levelInfo['valid_time']){
             //会员已经过期. 执行降级策略
             return self::downgradeUserLevel($levelInfo);
         }else{
@@ -211,7 +213,7 @@ class UserLevelService
         return $levelInfo;
     }
 
-    public static function getValidTime($level, $now){
+    public static function getValidTime($level, $now=0){
         $valid_time = 0;
         if($level['is_forever']){
             $valid_time = -1;
@@ -289,11 +291,20 @@ class UserLevelService
             $levelInfo['level_id'] = $list[0]['id'];
             $levelInfo['grade'] = $list[0]['grade'];
             $levelInfo['begin_time'] = time();
-            $levelInfo['valid_time'] = self::getValidTime($list[$i]);
+            $levelInfo['valid_time'] = self::getValidTime($list[0]);
             $levelInfo['level_value'] = 0;
             $levelInfo['level_type'] = 0;
+            $levelInfo['level_money'] = $list[0]['money'];
+        }else{
+            Log::write('initUserLevelInfo not level available');
         }
-        
+        $exist = true;
+        $level_no = '';
+        while($exist){
+            $level_no = date('Ymd').GetNumberCode(6);
+            $exist = Db::name(self::$name)->where('level_no', $level_no)->find();
+        }
+        $levelInfo['level_no'] = $level_no;
         Db::name(self::$name)->insertGetId($levelInfo);
         return $levelInfo;
     }

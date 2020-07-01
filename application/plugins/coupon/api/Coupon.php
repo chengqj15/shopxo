@@ -95,5 +95,23 @@ class Coupon extends Common
         // 调用服务层
         return DataReturn('操作成功', 0, BaseService::BuyUserCouponData($params));
     }
+
+    public function detail($params = [])
+    {
+        // 优惠劵保存
+        $temp = Db::name('PluginsCouponUser')->where(['id'=>$params['id']])->find();
+        if(empty($temp)){
+            return DataReturn('invalid coupon id', -1); 
+        }
+
+        $images = MyUrl('index/qrcode/index', ['content'=>urlencode(base64_encode($temp['id']))]);
+        return DataReturn('success', 0, $images); 
+    }
+
+    public function verify($params = [])
+    {
+        // 优惠劵保存
+        return CouponService::CouponSend($params);
+    }
 }
 ?>

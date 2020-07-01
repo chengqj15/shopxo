@@ -11,6 +11,7 @@
 namespace app\api\controller;
 
 use app\service\OrderService;
+use think\facade\Log;
 
 /**
  * 订单支付异步通知
@@ -44,6 +45,7 @@ class OrderNotify extends Common
     public function Notify()
     {
         $ret = OrderService::Notify($this->data_request);
+        Log::write('OrderNotify Notify ret:' . json_encode($ret));
         if($ret['code'] == 0 ||  $ret['code'] == 10001)
         {
             $this->SuccessReturn();
@@ -61,6 +63,7 @@ class OrderNotify extends Common
     public function RefundNotify()
     {
         $ret = OrderService::RefundNotify($this->data_request);
+        Log::write('OrderNotify RefundNotify ret:' . json_encode($ret));
         if($ret['code'] == 0 ||  $ret['code'] == 10001)
         {
             $this->SuccessReturn();
