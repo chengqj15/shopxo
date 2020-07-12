@@ -99,13 +99,21 @@ class Coupon extends Common
     public function detail($params = [])
     {
         // 优惠劵保存
-        $temp = Db::name('PluginsCouponUser')->where(['id'=>$params['id']])->find();
-        if(empty($temp)){
+        $coupon_params = [
+            'where' => [
+                'id' => $params['id'],
+                'user_id'   => $this->user['id'],
+                'is_valid'  => 1,
+            ],
+        ];
+        $data = UserCouponService::UserCouponDetail($coupon_params);
+        if(empty($data)){
             return DataReturn('invalid coupon id', -1); 
         }
 
-        $images = MyUrl('index/qrcode/index', ['content'=>urlencode(base64_encode($temp['id']))]);
-        return DataReturn('success', 0, $images); 
+        $images = MyUrl('index/qrcode/index', ['content'=>urlencode(base64_encode($data['coupon_code']))]);
+        $data['images'] = $images;
+        return DataReturn('success', 0, $data); 
     }
 
     public function verify($params = [])

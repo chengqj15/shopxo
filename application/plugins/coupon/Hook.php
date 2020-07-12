@@ -223,7 +223,7 @@ class Hook extends Controller
                         'name'      => $title.'-'.$ret['coupon_choice']['coupon']['desc'],
                         'price'     => $discount_price,
                         'type'      => 0,
-                        'tips'      => '-'.config('shopxo.price_symbol').$discount_price.'元',
+                        'tips'      => '-'.config('shopxo.price_symbol').$discount_price,
                         'business'  => 'plugins-coupon',
                         'ext'       => $ret['coupon_choice'],
                     ];

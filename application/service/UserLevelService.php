@@ -53,13 +53,15 @@ class UserLevelService
     }
 
     public static function setUserLevelInternal($levelInfo, $level, $type=0, $order_id=''){
+        Log::write('setUserLevelInternal level=' . json_encode($level));
 
         $valueLog = false;
+        $uid = $levelInfo['id'];
 
         $levelLog = [
             'uid' => $uid,
             'grade' => $level['grade'],
-            'level_id' => $level_id,
+            'level_id' => $level['id'],
             'origin_level_id' => $levelInfo['level_id'],
             'origin_grade' => $levelInfo['grade'],
             'type' => $type,
@@ -81,7 +83,7 @@ class UserLevelService
             $data=[
                 'status' => 1,
                 'grade' => $level['grade'],
-                'level_id' => $level_id,
+                'level_id' => $level['id'],
                 'level_money' => $level['money'],
                 'valid_time'=>self::getValidTime($level)
             ];
@@ -111,7 +113,7 @@ class UserLevelService
         // 开始事务
         Db::startTrans();
         // 更新 level info
-        Db::name(self::$name)->where('uid', $uid)->update($data);
+        Db::name(self::$name)->where('id', $uid)->update($data);
 
         // 记录level log
         $log_id = Db::name('UserLevelLog')->insertGetId($levelLog);
@@ -144,12 +146,12 @@ class UserLevelService
      * @throws \think\exception\DbException
      */
     public static function setUserLevel($uid, $level_id, $order_id){
-        $level = SystemUserLevel::getSytemList(['id'=>$level_id]);
-        if(!$level) {
+        $level_ret = SystemUserLevel::getSytemList(['id'=>$level_id]);
+        if($level_ret['code'] != 0 || empty($level_ret['data'])) {
             return DataReturn('invalid level', -1);
         }
         $levelInfo = self::getUserLevel($uid);
-        return self::setUserLevelInternal($levelInfo, $level, $order_id);
+        return self::setUserLevelInternal($levelInfo, $level_ret['data'][0], 1, $order_id);
     }
 
     /**
@@ -259,21 +261,89 @@ class UserLevelService
         $index = 0;
         foreach ($list as $key => &$item){
             $item['image'] = ResourcesService::AttachmentPathViewHandle($item['image']);
-            if($item['id'] == $level['id']){
+            if($item['id'] == $level['level_id']){
                 $index = $key;
             }
+            $up_money = $item['money'] - $level['level_money'];
+            $item['up_money'] = $up_money > 0 ? PriceBeautify(PriceNumberFormat($up_money)) : 0;
         }
 
         $ret = ['list' => $list, 'index'=>$index, 'level' => $level];
         return DataReturn('处理成功', 0, $ret);
     }
 
+    public static function getLevelValues($params = [])
+    {
+        $where = empty($params['where']) ? [] : $params['where'];
+        $m = isset($params['m']) ? intval($params['m']) : 0;
+        $n = isset($params['n']) ? intval($params['n']) : 10;
+        $order_by = empty($params['order_by']) ? 'id desc' : $params['order_by'];
+
+        // 获取数据列表
+        $data = Db::name('UserLevelValueLog')->where($where)->limit($m, $n)->order($order_by)->select();
+        if(!empty($data))
+        {
+            $common_integral_log_type_list = lang('common_integral_log_type_list');
+            foreach($data as &$v)
+            {
+                // 操作类型
+                $v['type_name'] = $common_integral_log_type_list[$v['type']]['name'];
+
+                // 时间
+                $v['add_time_time'] = date('Y-m-d H:i:s', $v['add_time']);
+                $v['add_time_date'] = date('Y-m-d', $v['add_time']);
+            }
+        }
+        return DataReturn('处理成功', 0, $data);
+    }
+
+    public static function getLevelValuesTotal($where = [])
+    {
+        return (int) Db::name('UserLevelValueLog')->where($where)->count();
+    }
+
+    public static function UserLevelValueLogListWhere($params = [])
+    {
+        // 条件初始化
+        $where = [];
+
+        // 用户id
+        if(!empty($params['user']))
+        {
+            $where[] = ['uid', '=', $params['user']['id']];
+        }
+
+        if(!empty($params['keywords']))
+        {
+            $where[] = ['msg', 'like', '%'.$params['keywords'] . '%'];
+        }
+
+        // 是否更多条件
+        if(isset($params['is_more']) && $params['is_more'] == 1)
+        {
+            if(isset($params['type']) && $params['type'] > -1)
+            {
+                $where[] = ['type', '=', intval($params['type'])];
+            }
+
+            // 时间
+            if(!empty($params['time_start']))
+            {
+                $where[] = ['add_time', '>', strtotime($params['time_start'])];
+            }
+            if(!empty($params['time_end']))
+            {
+                $where[] = ['add_time', '<', strtotime($params['time_end'])];
+            }
+        }
+
+        return $where;
+    }
+
     public static function getTashList($params)
     {
-        $level_id = $params['level_id'];
         $uid = $params['user']['id'];
-        $level = isset($params['level']) ? $params['level'] : null;
-        return UserTaskService::getTashList($level_id, $uid, $level);
+        return UserTaskService::getTashList($uid);
     }
 
     public static function initUserLevelInfo($uid)
@@ -309,4 +379,85 @@ class UserLevelService
         return $levelInfo;
     }
 
+    public static function OrderLevelValueGiving($params = [])
+    {
+        // 请求参数
+        $p = [
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'order_id',
+                'error_msg'         => '订单id有误',
+            ]
+        ];
+        $ret = ParamsChecked($params, $p);
+        if($ret !== true)
+        {
+            return DataReturn($ret, -1);
+        }
+
+        // 订单
+        $order = Db::name('Order')->field('id,user_id,status')->find(intval($params['order_id']));
+        if(empty($order))
+        {
+            return DataReturn('订单不存在或已删除，中止操作', 0);
+        }
+        if(!in_array($order['status'], [4]))
+        {
+            return DataReturn('当前订单状态不允许操作['.$params['order_id'].'-'.$order['status'].']', 0);
+        }
+
+        // 获取用户信息
+        $user = Db::name('User')->field('id')->find(intval($order['user_id']));
+        if(empty($user))
+        {
+            return DataReturn('用户不存在或已删除，中止操作', 0);
+        }
+
+        // 获取订单商品
+        $diff = $order['price'] - $order['preferential_price'];
+        $rate = MyC('common_level_value_rate', 1, false);
+        $diff = $diff/$rate;
+        if($diff <= 0){
+            return DataReturn('没有需要操作的数据', 0);
+        }
+
+        $levelInfo = self::getUserLevel($user['id']);
+        $orginal_value = $levelInfo['level_value'];
+
+        // 开始事务
+        Db::startTrans();
+
+        if(!Db::name(self::$name)->where(['id'=>$user['id']])->setInc('level_value', $diff))
+        {
+            return DataReturn('用户积分赠送失败['.$params['order_id'].'-'.$goods_id.']', -10);
+        }
+
+        // 积分日志
+        $valueLog = [
+                    'uid' => $user['id'],
+                    'delta_value' => $diff,
+                    'orginal_value' => $orginal_value,
+                    'level_value' => $orginal_value + $diff,
+                    'delta_type' => 0,
+                    'order_id' => $order['id'],
+                    'mark' => '订单商品完成赠送',
+                    'add_time' => time()
+                ];
+
+        
+        $log_id = Db::name('UserLevelValueLog')->insertGetId($valueLog);
+        if($log_id <= 0){
+            Db::rollback();
+            return DataReturn('成长值日志添加失败', -1);
+        }
+
+        $next = SystemUserLevel::getNextLevel($levelInfo['level_id']);
+        if($next && $next['point'] <= ($orginal_value + $diff)){
+            self::setUserLevelInternal($levelInfo, $next);
+        }
+        Db::commit();
+
+        return DataReturn('操作成功', 0);
+        
+    }
 }

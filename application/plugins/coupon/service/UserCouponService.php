@@ -24,6 +24,13 @@ use app\plugins\coupon\service\CouponService;
  */
 class UserCouponService
 {
+
+    public static function UserCouponDetail($params)
+    {
+        $data = Db::name('PluginsCouponUser')->where($params['where'])->find();
+        return $data;
+    }
+
     /**
      * 用户优惠劵列表
      * @author   Devil
@@ -72,8 +79,8 @@ class UserCouponService
                 $v['use_time_time'] = empty($v['use_time']) ? '' : date('Y-m-d H:i', $v['use_time']);
 
                 // 有效时间
-                $v['time_start_text'] = date('Y-m-d H:i', $v['time_start']);
-                $v['time_end_text'] = date('Y-m-d H:i', $v['time_end']);
+                $v['time_start_text'] = date('Y-m-d', $v['time_start']);
+                $v['time_end_text'] = date('Y-m-d', $v['time_end']);
 
                 // 时间
                 $v['add_time_time'] = empty($v['add_time']) ? '' : date('Y-m-d H:i:s', $v['add_time']);
@@ -134,6 +141,7 @@ class UserCouponService
             // 优惠劵类型
             $data['type_name'] = (isset($data['type']) && isset($coupon_type_list[$data['type']])) ? $coupon_type_list[$data['type']]['name'] : '未知';
             $data['type_unit'] = (!isset($data['type']) || $data['type'] == 0) ? '元' : '折';
+            $data['discount_value_f'] = (!isset($data['type']) || $data['type'] == 0) ? config('shopxo.price_symbol') . $data['discount_value'] . ' off' : (100-intval($data['discount_value']*10)) . '% off';
 
             // 背景色
             if((isset($data['bg_color']) && isset($coupon_bg_color_list[$data['bg_color']])))

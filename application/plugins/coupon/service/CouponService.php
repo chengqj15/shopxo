@@ -314,7 +314,8 @@ class CouponService
 
                 // 优惠劵类型
                 $v['type_name'] = (isset($v['type']) && isset($coupon_type_list[$v['type']])) ? $coupon_type_list[$v['type']]['name'] : '未知';
-                $v['type_unit'] = (!isset($v['type']) || $v['type'] == 0) ? '元' : '折';
+                $v['type_unit'] = (!isset($v['type']) || $v['type'] == 0) ? ' off' : '% off';
+                $v['discount_value_f'] = (!isset($v['type']) || $v['type'] == 0) ? config('shopxo.price_symbol') . $v['discount_value'] . ' off' : (100-intval($v['discount_value']*10)) . '% off';
 
                 // 背景色
                 if((isset($v['bg_color']) && isset($coupon_bg_color_list[$v['bg_color']])))
@@ -674,6 +675,7 @@ class CouponService
         {
             $data[] = [
                 'coupon_id'     => $coupon['id'],
+                'coupon_code'   => date('YmdHis').GetNumberCode(6),
                 'user_id'       => $user_id,
                 'is_valid'      => 1,
                 'time_start'    => $time_start,

@@ -832,16 +832,30 @@ class BuyService
             $service_fee_ratio = MyC('common_order_service_fee_ratio', 0, true);
             $service_fee_upper_limit = MyC('common_order_service_fee_upper_limit', 0, true);
 
-            if($site_model == 3)
+            $service_fee_free = 0;
+            if(in_array($site_model, [3,98,99]))
             {
                 $service_fee = 0;
             }
             else
             {
                 $service_fee = min($total_price * $service_fee_ratio / 100, $service_fee_upper_limit);
+                if($service_fee > 0){
+                    // 会员免服务费
+                    $levelInfo = UserLevelService::getUserLevel($params['user']['id']);
+                    $firstday  = mktime(0, 0, 0, date("m")  , 1, date("Y"));
+                    $lastday = mktime(0, 0, 0, date("m")+1, 1,   date("Y"));
+                    $free_count = Db::name('Order')->where(['user_id'=>$params['user']['id'], 'service_fee_free'=>1])->where("add_time", ">=", $firstday)->where("add_time", "<", $lastday)->where('status', 'not in', [5,6])->count();
+                    $total_count = $levelInfo['free_package_count'];
+                    if($total_count > $free_count) 
+                    {
+                        $service_fee = 0;
+                        $service_fee_free = 1;   
+                    }
+                }
             }
 
-            $actual_price = $total_price + $service_fee;
+            $actual_price = $total_price;
 
 
             $base = [
@@ -853,6 +867,8 @@ class BuyService
 
                 // 服务费
                 'service_fee'           => $service_fee,
+
+                'service_fee_free'      => $service_fee_free,
 
                 // 优惠金额
                 'preferential_price'    => 0.00,
@@ -920,9 +936,10 @@ class BuyService
             }
 
             // 返回数据再次处理，防止插件处理不够完善
+            $actual_price = $result['base']['actual_price'] + $service_fee;
             $result['base']['total_price'] = PriceNumberFormat($result['base']['total_price']);
             $result['base']['service_fee'] = PriceNumberFormat($result['base']['service_fee']);
-            $result['base']['actual_price'] = PriceNumberFormat($result['base']['actual_price']);
+            $result['base']['actual_price'] = PriceNumberFormat($actual_price);
             $result['base']['preferential_price'] = PriceNumberFormat($result['base']['preferential_price']);
             $result['base']['increase_price'] = PriceNumberFormat($result['base']['increase_price']);
 
@@ -1146,6 +1163,7 @@ class BuyService
             'price'                 => ($buy['data']['base']['total_price'] <= 0.00) ? 0.00 : $buy['data']['base']['total_price'],
             'total_price'           => ($buy['data']['base']['actual_price'] <= 0.00) ? 0.00 : $buy['data']['base']['actual_price'],
             'service_fee'           => ($buy['data']['base']['service_fee'] <= 0.00) ? 0.00 : $buy['data']['base']['service_fee'],
+            'service_fee_free'      => $buy['data']['base']['service_fee_free'],
             'extension_data'        => empty($buy['data']['extension_data']) ? '' : json_encode($buy['data']['extension_data']),
             'payment_id'            => isset($params['payment_id']) ? intval($params['payment_id']) : 0,
             'buy_number_count'      => array_sum(array_column($buy['data']['goods'], 'stock')),
@@ -1724,7 +1742,7 @@ class BuyService
             {
                 if($params['order_data']['order_model'] == 99){
                     // 查看是否已扣除过库存,避免更改模式导致重复扣除
-                    $temp = Db::name('UserLevelLog')->where(['order_no'=>$params['order_id'], 'level_id'=>$v['goods_id']])->find();
+                    $temp = Db::name('UserLevelLog')->where(['order_id'=>$params['order_id'], 'level_id'=>$v['goods_id']])->find();
                     if(empty($temp))
                     {
                         $ret = UserLevelService::setUserLevel($v['user_id'], $v['goods_id'], $params['order_id']);

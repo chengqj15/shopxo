@@ -74,18 +74,22 @@ class SystemUserLevel
      * @param $leval_id 当前用户的会员id
      * @return int|mixed
      */
-    public static function getNextLevelId($leval_id)
+    public static function getNextLevel($level_id)
     {
-        $list=self::getLevelListAndGrade($leval_id,false);
-        $grade=0;
-        $leveal=[];
+        $list = self::getLevelListAndGrade();
+        $found = false;
+        $next = false;
         foreach ($list as $item){
-            if($item['id']==$leval_id) $grade=$item['grade'];
+            if($found){
+                $next = $item;
+                break;
+            }
+            if($item['id']==$level_id) {
+                $found = true;
+            }
         }
-        foreach ($list as $item){
-            if($grade < $item['grade']) array_push($leveal,$item['id']);
-        }
-        return isset($leveal[0]) ? $leveal[0] : 0;
+        
+        return $next;
     }
 
     /**

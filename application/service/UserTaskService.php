@@ -271,36 +271,37 @@ class UserTaskService
         $alert=$alert ? $alert.'.': '';
         return $model->where("{$alert}is_show",1);
     }
+
     /**
      * 获取等级会员任务列表
      * @param int $level_id 会员等级id
      * @param int $uid 用户id
      * @return array
      * */
-    public static function getTashList($level_id, $uid=0, $level=null)
+    public static function getTashList($uid=0)
     {
-       $list = self::visibleWhere()->where('level_id',$level_id)->field('name,real_name,task_type,illustrate,number,id')->order('sort desc')->select();
-       Log::write('getTashList list:' . json_encode($list));
+        $list = self::visibleWhere()->field('name,real_name,task_type,illustrate,number,id')->order('sort desc')->select();
+        Log::write('getTashList list:' . json_encode($list));
 
-       if($uid == 0) return $list;
-       if($level === null)
-       {
-            $level = SystemUserLevel::getLevelInfo($uid);
-            Log::write('getTashList getLevelInfo:' . json_encode($level));
+        if($uid == 0) return $list;
+
+        $task_ids = array_column($list, 'id');
+        $where = [
+                    ['status', '=', 0],
+                    ['uid', '=', $uid],
+                    ['task_id','in',implode(',', $task_ids)]
+                ];
+        $finish_tasks = Db::name('UserTaskFinish')->where($where)->select();
+        $finish_ids = array_column($finish_tasks, 'task_id');
+        foreach ($list as $key => &$value) {
+            if(in_array($value['id'], $finish_ids)) {
+                $value['finish'] = 1;
+            }else{
+                $value['finish'] = 0;
+            }
         }
-       //获取下一个vip的id
-       $LeveId = SystemUserLevel::getNextLevelId($level['id']);
-       Log::write('getTashList getNextLevelId:' . $LeveId);
-       $is_clear = SystemUserLevel::getClear($level['id']);
-       Log::write('getTashList getClear:' . $is_clear);
-       if($is_clear == false && $LeveId == $level_id) $is_clear=true;
-       $reach_count = self::getTaskComplete($level_id,$uid,true);
-       Log::write('getTashList getTaskComplete:' . $reach_count);
-       return [
-           'list'=>$list,
-           'reach_count'=>$reach_count,
-           'task'=>self::tidyTask($list,$uid,$is_clear,User::getCleanTime($uid)),
-       ];
+
+        return $list;
     }
 
     /**
@@ -354,72 +355,6 @@ class UserTaskService
         if(!count($taskIds)) return true;
         return UserTaskFinish::where('uid',$uid)->where('task_id','in',$taskIds)->update(['status'=>1]);
     }
-    /**
-     * 检查当前等级是否完成全部任务
-     * @param int $level_id 会员id
-     * @param int $uid 用户uid
-     * @return boolean
-     * */
-    public static function getTaskComplete($level_id,$uid,$isCount=false)
-    {
-        $taskIds=self::visibleWhere()->where('level_id',$level_id)->column('id','id');
-        $taskIdsCount=count($taskIds);
-        Log::write('getTaskComplete taskIdsCount:' . $taskIdsCount);
-        //如果当前会员没有任务默认为直接升级为下一等级
-        if($taskIdsCount){
-            if($isCount){
-                return UserTaskFinish::countTask([['uid', '=', $uid],['task_id','in',$taskIds]]);
-            }else{
-                $where = [
-                    ['status', '=', $isCount ? 1 : 0],
-                    ['uid', '=', $uid],
-                    ['task_id','in',implode(',', $taskIds)]
-                ];
-                $finishCount = UserTaskFinish::countTask($where);
-            }
-            //如果当前任务有完成其一的,查询当前完成的任务数量,如果有任务完成则达成当前vip
-            if(self::visibleWhere()->where('id','in',implode(',', $taskIds))->where('is_must',0)->count() && $finishCount){
-                return true;
-            }
-            return  $finishCount >= $taskIdsCount;
-        }
-        if($isCount) return 0;
-        //如果没有设置任务当前等级无需购买则返回false
-        if(Db::name('SystemUserLevel')->where(['id'=>$level_id,'is_pay'=>0])->count()) return false;
-        return true;
-    }
-    /**
-     * 设置任务内容完成情况
-     * @param array $task 任务列表
-     * @param int $uid 用户id
-     * @热图图呢 array
-     * */
-    public static function tidyTask($task,$uid,$is_clear,$startTime){
-        if(!is_array($task)) return $task;
-        foreach ($task as &$item){
-            //如果已完成该任务进度直接为100
-            if(Db::name('UserTaskFinish')::where('uid',$uid)->where('task_id',$item['id'])->count()){
-                $item['new_number']=$item['number'];
-                $item['speed']=100;
-                $item['finish']=1;
-                $item['task_type_title']='';
-            }else{
-//                if($is_clear){
-                    list($new_number, $speed, $task_type_title, $finish) = self::set_task_type($item, $uid, $startTime);
-                    $item['new_number'] = $new_number;
-                    $item['speed'] = $speed;
-                    $item['task_type_title'] = $task_type_title;
-                    $item['finish'] = $finish;
-//                }else {
-//                    list($new_number, $speed, $task_type_title, $finish) = self::set_task_type($item,-1,time()+86400);
-//                    $item['new_number'] = $new_number;
-//                    $item['speed'] = $speed;
-//                    $item['task_type_title'] = $task_type_title;
-//                    $item['finish'] = $finish;
-//                }
-            }
-        }
-        return $task;
-    }
+
 
 }

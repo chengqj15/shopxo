@@ -1397,6 +1397,15 @@ class OrderService
                 return DataReturn($ret['msg'], -10);
             }
 
+            // 订单成长值赠送
+            $ret = UserLevelService::OrderLevelValueGiving(['order_id'=>$order['id']]);
+            if($ret['code'] != 0)
+            {
+                // 事务回滚
+                Db::rollback();
+                return DataReturn($ret['msg'], -10);
+            }
+
             // 订单商品销量增加
             $ret = self::GoodsSalesCountInc(['order_id'=>$order['id']]);
             if($ret['code'] != 0)

@@ -31,11 +31,15 @@ CREATE TABLE IF NOT EXISTS `{PREFIX}plugins_coupon` (
 
 alter table s_plugins_coupon add column `buy_amount` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '购买金额 | 0或空代表不需要付费购买' after `use_value_ids`;
 alter table s_plugins_coupon add column `is_paid` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否购买（0否，1是）' after `use_value_ids`;
+alter table s_plugins_coupon_user add column `buy_order_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '购买的订单id' after `use_order_id`;
+alter table s_plugins_coupon_user modify column `coupon_code` varchar(20) NOT NULL DEFAULT '0' COMMENT '优惠券序列号' after `coupon_id`;
+alter table s_plugins_coupon_user add UNIQUE index `coupon_code`(`coupon_code`);
 
 # 用户优惠劵表
 CREATE TABLE IF NOT EXISTS `{PREFIX}plugins_coupon_user` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
   `coupon_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '优惠劵id',
+  `coupon_code` varchar(20) NOT NULL DEFAULT '0' COMMENT '优惠劵code',
   `user_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '用户id',
   `time_start` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '有效开始时间',
   `time_end` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '有效结束时间',
