@@ -1,0 +1,111 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <legend>
+            <span class="fs-16">优惠劵发放</span>
+            <a href="{{:PluginsAdminUrl('coupon', 'coupon', 'index', $params)}}" class="fr fs-14 m-t-5 am-icon-mail-reply"> 返回</a>
+        </legend>
+
+        {{if !empty($data)}}
+            <!-- form start -->
+            <form class="am-form form-validation view-save" action="{{:PluginsAdminUrl('coupon', 'coupon', 'send')}}" method="POST" request-type="ajax-url" request-value="{{:PluginsAdminUrl('coupon', 'coupon', 'index', $params)}}">
+                <!-- 优惠劵信息 -->
+                <div class="am-panel am-panel-default">
+                    <div class="am-panel-hd">优惠劵信息</div>
+                    <div class="am-panel-bd">
+                        <dl class="dl-content">
+                            <dt>名称</dt>
+                            <dd>
+                                {{$data.name}}
+                                <span class="am-badge am-radius {{if $data['type'] eq 0}}am-badge-success{{else /}}am-badge-warning{{/if}}">{{$data.type_name}}</span>
+                            </dd>
+
+                            <dt>描述</dt>
+                            <dd>{{$data.desc}}</dd>
+
+                            <dt>过期类型</dt>
+                            <dd>
+                                {{$data.expire_type_name}}
+                                {{if $data['expire_type'] eq 0}}
+                                    <span class="am-badge am-radius">有效 {{$data.expire_hour}} 小时</span>
+                                {{else /}}
+                                    <span class="am-badge am-radius">{{$data.fixed_time_start}} ~ {{$data.fixed_time_end}}</span>
+                                {{/if}}
+                            </dd>
+
+                            <dt>使用限制</dt>
+                            <dd>
+                                {{$data.use_limit_type_name}}
+                                {{if $data['use_limit_type'] eq 1}}
+                                    <p class="am-text-warning">仅限关联的品类下使用</p>
+                                {{elseif $data['use_limit_type'] eq 2}}
+                                    <p class="am-text-warning">仅限关联的商品使用</p>
+                                {{/if}}
+                            </dd>
+
+                            <dt>优惠信息</dt>
+                            <dd>
+                                {{if $data['type'] eq 0}}
+                                    减 <span class="am-text-success">{{$data.discount_value}}</span> 元
+                                {{else /}}
+                                    打 <span class="am-text-warning">{{$data.discount_value}}</span> 折
+                                {{/if}}
+                            </dd>
+
+                            <dt>发放限制</dt>
+                            <dd>
+                                {{if $data['limit_send_count'] gt 0}}
+                                    最多发放 <span class="am-text-danger">{{$data.limit_send_count}}</span> 张
+                                {{else /}}
+                                    不限发放数量
+                                {{/if}}
+                                {{if $data['already_send_count'] gt 0}}
+                                    <br />已发放<span class="am-text-success">{{$data.already_send_count}}</span>张
+                                {{/if}}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- 搜索用户 -->
+                <div class="am-panel am-panel-default not-user-panel">
+                    <div class="am-panel-hd">搜索用户</div>
+                    <div class="am-panel-bd">
+                        <div class="am-input-group am-input-group-sm secondary user-search-container" data-search-url="{{:PluginsAdminUrl('coupon', 'coupon', 'usersearch')}}">
+                            <input type="text" autocomplete="off" class="am-radius user-input-keywords" placeholder="用户名/昵称/手机/邮箱" value="">
+                            <span class="am-input-group-btn">
+                                <button class="am-btn am-btn-default am-radius" type="button">搜索</button>
+                            </span>
+                        </div>
+                        <ul class="am-avg-sm-2 am-avg-md-6 am-avg-lg-10 user-items"></ul>
+                        <div class="table-no"><i class="am-icon-warning"></i> 请输入关键字搜索用户</div>
+                    </div>
+                </div>
+
+                <!-- 已选用户 -->
+                <div class="am-panel am-panel-success already-user-panel">
+                    <div class="am-panel-hd">已选用户</div>
+                    <div class="am-panel-bd">
+                        <ul class="am-avg-sm-2 am-avg-md-4 am-avg-lg-8 user-items"></ul>
+                        <div class="table-no"><i class="am-icon-warning"></i> 没有选择用户</div>
+                    </div>
+                </div>
+
+                <div class="am-form-group am-form-group-refreshing">
+                    <input type="hidden" name="coupon_id" {{if !empty($data['id'])}} value="{{$data.id}}"{{/if}} />
+                    <button type="submit" class="am-btn am-btn-primary am-radius btn-loading-example am-btn-sm am-btn-block" data-am-loading="{loadingText:'处理中...'}">发放</button>
+                </div>
+            </form>
+            <!-- form end -->
+        {{else /}}
+            <div class="table-no"><i class="am-icon-warning"></i> 优惠劵操作id有误</div>
+        {{/if}}
+    </div>
+</div>
+<!-- right content end  -->
+        
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

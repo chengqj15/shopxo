@@ -1,0 +1,131 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <legend>
+            <span class="fs-16">优惠劵</span>
+            <a href="{{:MyUrl('admin/pluginsadmin/index')}}" class="fr fs-14 m-t-5 am-icon-mail-reply"> 返回</a>
+        </legend>
+
+        <div class="coupon-content">
+            <!-- 基础配置 -->
+            <div class="am-panel am-panel-secondary coupon-content-base">
+                <div class="am-panel-hd">
+                    <span class="am-panel-title">基础配置</span>
+                    <a class="am-fr" href="{{:PluginsAdminUrl('coupon', 'admin', 'saveinfo')}}">编辑</a>
+                </div>
+                <div class="am-panel-bd">
+                    <div class="items">
+                        <label>应用导航名称</label>
+                        <div>
+                            {{if empty($data['application_name'])}}
+                                未设置应用导航名称
+                            {{else /}}
+                                {{$data.application_name}}
+                            {{/if}}
+                        </div>
+                    </div>
+                    
+                    <div class="items">
+                        <label>允许用户重复领取</label>
+                        <div>
+                            {{if isset($data['is_repeat_receive']) and $data['is_repeat_receive'] eq 1}}
+                                是
+                            {{else /}}
+                                否
+                            {{/if}}
+                        </div>
+                    </div>
+                
+                    <div class="items">
+                        <label>顶部大图</label>
+                        <div class="banner-images">
+                            {{if empty($data['banner_images'])}}
+                                未设置图片
+                            {{else /}}
+                                <img src="{{$data.banner_images}}" alt="大图" />
+                            {{/if}}
+                        </div>
+                    </div>
+                
+                    <div class="items">
+                        <label>背景色</label>
+                        <div class="bg-color-tag" {{if !empty($data['banner_bg_color'])}}style="background:{{$data.banner_bg_color}}"{{/if}}></div>
+                    </div> 
+                
+                    <div class="items">
+                        <label>链接地址</label>
+                        <div>
+                            {{if !empty($data['banner_url'])}}
+                                <a href="{{$data.banner_url}}" target="_blank">{{$data.banner_url}}</a>
+                            {{else /}}
+                                未设置
+                            {{/if}}
+                        </div>
+                    </div>
+                
+                    <div class="items">
+                        <label>是否新窗口打开</label>
+                        <div>
+                            {{if isset($data['banner_is_window_open']) and $data['banner_is_window_open'] eq 1}}
+                                是
+                            {{else /}}
+                                否
+                            {{/if}}
+                        </div>
+                    </div>
+
+                    <div class="items">
+                        <label>优惠劵过期脚本</label>
+                        <div>
+                            <p class="am-text-warning">建议将该地址添加到linux定时任务定时请求即可（返回结果 success:0 冒号后面则是处理的数据条数）</p>
+                            <a href="{{:PluginsHomeUrl('coupon', 'index', 'expire')}}" target="_blank">{{:PluginsHomeUrl('coupon', 'index', 'expire')}}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 优惠劵 -->
+            <div class="am-panel am-panel-secondary coupon-content-module">
+                <div class="am-panel-hd">
+                    <span class="am-panel-title">优惠劵</span>
+                </div>
+                <div class="am-panel-bd">
+                    <ul data-am-widget="gallery" class="am-gallery am-avg-sm-1 am-avg-md-2 am-avg-lg-2 am-gallery-default" data-am-gallery="{ pureview: true }">
+                        {{if !empty($statistical)}}
+                            {{foreach $statistical as $v}}
+                                <li class="module-coupon">
+                                    <div class="module-items">
+                                        <p class="title">{{$v.title}}</p>
+                                        <p class="total animation-count-to" data-to="{{$v.count}}" data-speed="1500">{{$v.count}}</p>
+                                        <div class="small">
+                                            <span>昨日</span>
+                                            <span class="animation-count-to" data-to="{{$v.yesterday_count}}" data-speed="1500">{{$v.yesterday_count}}</span>
+                                        </div>
+                                        <div class="small">
+                                            <span>今日</span>
+                                            <span class="animation-count-to" data-to="{{$v.today_count}}" data-speed="1500">{{$v.today_count}}</span>
+                                        </div>
+                                        {{if isset($v['right_count']) and isset($v['right_title'])}}
+                                            <div class="top-right">
+                                                <span>{{$v.right_title}}</span>
+                                                <span class="animation-count-to" data-to="{{$v.right_count}}" data-speed="1500">{{$v.right_count}}</span>
+                                            </div>
+                                        {{/if}}
+                                        <a href="{{$v.url}}" class="view-to">管理 <i class="am-icon-angle-double-right"></i></a>
+                                    </div>
+                                </li>
+                            {{/foreach}}
+                        {{/if}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- right content end  -->
+        
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

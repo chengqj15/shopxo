@@ -1,0 +1,65 @@
+{{if !empty($coupon_list)}}
+    <div class="buy-items plugins-coupon-buy-choice">
+        <h3>优惠劵</h3>
+        <div class="coupon-content">
+            {{if !empty($coupon_choice)}}
+                <div class="choice-selected confirm-selected am-margin-right-sm">
+                    <span class="coupon-price" {{if !empty($coupon_choice['coupon']['bg_color_value'])}}style="color:{{$coupon_choice.coupon.bg_color_value}}"{{/if}}>
+                        <em>{{$price_symbol}}</em>
+                        <strong class="am-text-sm">{{$coupon_choice.coupon.discount_value}}</strong>
+                        <em>{{if $coupon_choice['coupon']['type'] eq 0}}元{{else /}}折{{/if}}</em>
+                    </span>
+                    <span class="am-margin-left-xs">{{$coupon_choice.coupon.desc}}</span>
+                    <i class="icon-active"></i>
+                </div>
+            {{/if}}
+            <span class="am-margin-right-sm">可用 <strong class="am-text-warning">{{:count($coupon_list)}}</strong> 张</span>
+            <span class="choice-view-submit" data-am-modal="{target: '#plugins-coupon-buy-popup'}">选择优惠劵</span>
+            {{if !empty($coupon_choice)}}
+                <div class="am-text-left am-margin-top-xs">
+                    <span class="am-text-warning cancel-view-submit">不使用优惠劵</span>
+                </div>
+            {{/if}}
+        </div>
+    </div>
+
+    <!-- 优惠劵内容 -->
+    <div class="am-popup" id="plugins-coupon-buy-popup">
+        <div class="am-popup-inner">
+            <div class="am-popup-hd">
+                <h4 class="am-popup-title">优惠劵选择</h4>
+                <span data-am-modal-close class="am-close">&times;</span>
+            </div>
+            <div class="am-popup-bd plugins-coupon">
+                <ul class="am-avg-sm-1 am-avg-md-1 am-avg-lg-1 plugins-coupon-items">
+                    {{foreach $coupon_list as $v}}
+                        <li data-coupon-id="{{$v.id}}" {{if isset($params['coupon_id']) and $params['coupon_id'] eq $v['id']}}class="coupon-selected"{{/if}}>
+                            <div class="item am-cf" {{if !empty($v['coupon']['bg_color_value'])}}style="border:1px solid {{$v.coupon.bg_color_value}}"{{/if}}>
+                                <div class="v-left am-fl am-padding-left-sm am-padding-top-sm am-padding-bottom-sm">
+                                    <div class="base am-text-truncate" {{if !empty($v['coupon']['bg_color_value'])}}style="color:{{$v.coupon.bg_color_value}}"{{/if}}>
+                                        <span class="symbol">{{$price_symbol}}</span>
+                                        <span class="price">{{$v.coupon.discount_value}}</span>
+                                        <span class="unit">{{if $v['coupon']['type'] eq 0}}元{{else /}}折{{/if}}</span>
+                                        {{if !empty($v['coupon']['desc'])}}
+                                            <span class="desc am-margin-left-sm">{{$v.coupon.desc}}</span>
+                                        {{/if}}
+                                    </div>
+                                    {{if !empty($v['coupon']['use_limit_type_name'])}}
+                                        <p class="tips am-text-truncate">{{$v.coupon.use_limit_type_name}}</p>
+                                    {{/if}}
+                                    <p class="time am-text-truncate am-margin-top-xs">{{$v.time_start_text}} 至 {{$v.time_end_text}}</p>
+                                </div>
+                                <div class="v-right am-fr am-vertical-align am-text-center" {{if !empty($v['coupon']['bg_color_value'])}}style="background:{{$v.coupon.bg_color_value}}"{{/if}}>
+                                    <b class="semi-circle"></b>
+                                    <div class="am-vertical-align-middle">
+                                        {{if isset($params['coupon_id']) and $params['coupon_id'] eq $v['id']}}已选{{else /}}选择{{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {{/foreach}}
+                </ul>
+            </div>
+        </div>
+    </div>
+{{/if}}

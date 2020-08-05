@@ -589,7 +589,7 @@ class OrderService
         $where = [
             ['is_delete_time', '=', 0],
         ];
-
+        $where[] = ['order_model', 'not in', [98, 99]];
         // id
         if(!empty($params['id']))
         {

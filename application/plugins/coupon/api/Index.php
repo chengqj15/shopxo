@@ -120,5 +120,24 @@ class Index extends Common
         ];
         return DataReturn('处理成功', 0, $result);
     }
+
+    public function detail($params = [])
+    {
+        // 优惠劵保存
+        // 优惠劵列表
+        $coupon_params = [
+            'where'             => [
+                'is_enable'         => 1,
+                'id'   => $params['id'],
+            ]
+        ];
+        $ret = CouponService::CouponList($coupon_params);
+        if(empty($ret['data']))
+        {
+            return DataReturn('invalid coupon id', -1); 
+        }
+
+        return DataReturn('success', 0, $ret['data'][0]); 
+    }
 }
 ?>

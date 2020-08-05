@@ -1,0 +1,142 @@
+{{include file="public/header" /}}
+
+<!-- header top nav -->
+{{include file="public/header_top_nav" /}}
+
+<!-- search -->
+{{include file="public/nav_search" /}}
+
+<!-- header nav -->
+{{include file="public/header_nav" /}}
+
+<!-- goods category -->
+{{include file="public/goods_category" /}}
+
+<!-- content -->
+<div class="am-container user-main">
+
+    <!-- user menu start -->
+    {{include file="public/user_menu" /}}
+    <!-- user menu end -->
+
+    <!-- content start -->
+    <div class="user-content">
+        <div class="user-content-body plugins-coupon">
+            <div data-am-widget="tabs" class="am-tabs am-tabs-d2" data-am-tabs-noswipe="1">
+                <ul class="am-tabs-nav am-cf">
+                    <li class="am-active"><a href="[data-tab-panel-0]">未使用</a></li>
+                    <li class=""><a href="[data-tab-panel-1]">已使用</a></li>
+                    <li class=""><a href="[data-tab-panel-2]">已过期</a></li>
+                </ul>
+                <div class="am-tabs-bd">
+                    <div data-tab-panel-0 class="am-tab-panel am-active not-use-items">
+                        <!-- 未使用 -->
+                        {{if !empty($coupon_list['not_use'])}}
+                            <ul class="am-avg-sm-1 am-avg-md-2 am-avg-lg-3 plugins-coupon-items">
+                                {{foreach $coupon_list.not_use as $v}}
+                                    <li data-coupon-user-id="{{$v.id}}" data-coupon-id="{{$v.coupon_id}}">
+                                        <div class="item am-cf" {{if !empty($v['coupon']['bg_color_value'])}}style="border:1px solid {{$v.coupon.bg_color_value}}"{{/if}}>
+                                            <div class="v-left am-fl am-padding-left-sm am-padding-top-sm am-padding-bottom-sm">
+                                                <div class="base am-text-truncate" {{if !empty($v['coupon']['bg_color_value'])}}style="color:{{$v.coupon.bg_color_value}}"{{/if}}>
+                                                    <span class="symbol">{{$price_symbol}}</span>
+                                                    <span class="price">{{$v.coupon.discount_value}}</span>
+                                                    <span class="unit">{{$v.coupon.type_unit}}</span>
+                                                    {{if !empty($v['coupon']['desc'])}}
+                                                        <span class="desc am-margin-left-sm">{{$v.coupon.desc}}</span>
+                                                    {{/if}}
+                                                </div>
+                                                {{if !empty($v['coupon']['use_limit_type_name'])}}
+                                                    <p class="tips am-text-truncate">{{$v.coupon.use_limit_type_name}}</p>
+                                                {{/if}}
+                                                <p class="time am-text-truncate am-margin-top-xs">{{$v.time_start_text}} 至 {{$v.time_end_text}}</p>
+                                            </div>
+                                                <a href="{{$Think.__MY_URL__}}" class="am-block">
+                                                <div class="v-right am-fr am-vertical-align am-text-center" {{if !empty($v['coupon']['bg_color_value'])}}style="background:{{$v.coupon.bg_color_value}}"{{/if}}>
+                                                    <b class="semi-circle"></b>
+                                                    <div class="am-vertical-align-middle">去使用</div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </li>
+                                {{/foreach}}
+                            </ul>
+                        {{else /}}
+                            <div class="table-no"><i class="am-icon-warning"></i> 没有可用优惠劵</div>
+                        {{/if}}
+                    </div>
+                    <div data-tab-panel-1 class="am-tab-panel ">
+                        <!-- 已使用 -->
+                        {{if !empty($coupon_list['already_use'])}}
+                            <ul class="am-avg-sm-1 am-avg-md-2 am-avg-lg-3 plugins-coupon-items">
+                                {{foreach $coupon_list.already_use as $v}}
+                                    <li data-coupon-user-id="{{$v.id}}" data-coupon-id="{{$v.coupon_id}}">
+                                        <div class="item am-cf coupon-disabled" {{if !empty($v['coupon']['bg_color_value'])}}style="border:1px solid {{$v.coupon.bg_color_value}}"{{/if}}>
+                                            <div class="v-left am-fl am-padding-left-sm am-padding-top-sm am-padding-bottom-sm">
+                                                <div class="base am-text-truncate" {{if !empty($v['coupon']['bg_color_value'])}}style="color:{{$v.coupon.bg_color_value}}"{{/if}}>
+                                                    <span class="symbol">{{$price_symbol}}</span>
+                                                    <span class="price">{{$v.coupon.discount_value}}</span>
+                                                    <span class="unit">{{$v.coupon.type_unit}}</span>
+                                                    {{if !empty($v['coupon']['desc'])}}
+                                                        <span class="desc am-margin-left-sm">{{$v.coupon.desc}}</span>
+                                                    {{/if}}
+                                                </div>
+                                                {{if !empty($v['coupon']['use_limit_type_name'])}}
+                                                    <p class="tips am-text-truncate">{{$v.coupon.use_limit_type_name}}</p>
+                                                {{/if}}
+                                                <p class="time am-text-truncate am-margin-top-xs">使用 {{$v.use_time_time}}</p>
+                                            </div>
+                                            <div class="v-right am-fr am-vertical-align am-text-center coupon-disabled" {{if !empty($v['coupon']['bg_color_value'])}}style="background:{{$v.coupon.bg_color_value}}"{{/if}}>
+                                                <b class="semi-circle"></b>
+                                                <div class="am-vertical-align-middle">已使用</div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                {{/foreach}}
+                            </ul>
+                        {{else /}}
+                            <div class="table-no"><i class="am-icon-warning"></i> 没有已使用优惠劵</div>
+                        {{/if}}
+                    </div>
+                    <div data-tab-panel-2 class="am-tab-panel ">
+                        <!-- 已过期 -->
+                        {{if !empty($coupon_list['already_expire'])}}
+                            <ul class="am-avg-sm-1 am-avg-md-2 am-avg-lg-3 plugins-coupon-items">
+                                {{foreach $coupon_list.already_expire as $v}}
+                                    <li data-coupon-user-id="{{$v.id}}" data-coupon-id="{{$v.coupon_id}}">
+                                        <div class="item am-cf coupon-disabled" {{if !empty($v['coupon']['bg_color_value'])}}style="border:1px solid {{$v.coupon.bg_color_value}}"{{/if}}>
+                                            <div class="v-left am-fl am-padding-left-sm am-padding-top-sm am-padding-bottom-sm">
+                                                <div class="base am-text-truncate" {{if !empty($v['coupon']['bg_color_value'])}}style="color:{{$v.coupon.bg_color_value}}"{{/if}}>
+                                                    <span class="symbol">{{$price_symbol}}</span>
+                                                    <span class="price">{{$v.coupon.discount_value}}</span>
+                                                    <span class="unit">{{$v.coupon.type_unit}}</span>
+                                                    {{if !empty($v['coupon']['desc'])}}
+                                                        <span class="desc am-margin-left-sm">{{$v.coupon.desc}}</span>
+                                                    {{/if}}
+                                                </div>
+                                                {{if !empty($v['coupon']['use_limit_type_name'])}}
+                                                    <p class="tips am-text-truncate">{{$v.coupon.use_limit_type_name}}</p>
+                                                {{/if}}
+                                                <p class="time am-text-truncate am-margin-top-xs">过期 {{$v.time_end_text}}</p>
+                                            </div>
+                                            <div class="v-right am-fr am-vertical-align am-text-center coupon-disabled" {{if !empty($v['coupon']['bg_color_value'])}}style="background:{{$v.coupon.bg_color_value}}"{{/if}}>
+                                                <b class="semi-circle"></b>
+                                                <div class="am-vertical-align-middle">已过期</div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                {{/foreach}}
+                            </ul>
+                        {{else /}}
+                            <div class="table-no"><i class="am-icon-warning"></i> 没有已过期优惠劵</div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- content end -->
+</div>
+
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

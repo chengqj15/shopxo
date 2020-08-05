@@ -846,7 +846,7 @@ class BuyService
                     $firstday  = mktime(0, 0, 0, date("m")  , 1, date("Y"));
                     $lastday = mktime(0, 0, 0, date("m")+1, 1,   date("Y"));
                     $free_count = Db::name('Order')->where(['user_id'=>$params['user']['id'], 'service_fee_free'=>1])->where("add_time", ">=", $firstday)->where("add_time", "<", $lastday)->where('status', 'not in', [5,6])->count();
-                    $total_count = $levelInfo['free_package_count'];
+                    $total_count = isset($levelInfo['free_package_count']) ? $levelInfo['free_package_count'] : 0;
                     if($total_count > $free_count) 
                     {
                         $service_fee = 0;
@@ -869,6 +869,8 @@ class BuyService
                 'service_fee'           => $service_fee,
 
                 'service_fee_free'      => $service_fee_free,
+
+                'membership_discount'   => 1.00,
 
                 // 优惠金额
                 'preferential_price'    => 0.00,

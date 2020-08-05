@@ -1,0 +1,61 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <legend>
+            <span class="fs-16">数据备份</span>
+            <a href="{{:MyUrl('admin/pluginsadmin/index')}}" class="fr fs-14 m-t-5 am-icon-mail-reply"> 返回</a>
+        </legend>
+
+        <div class="am-alert am-alert-warning" data-am-alert>
+            <p>备份整个系统的数据表，消耗时间（最大可执行30分钟）根据数据大小而定。建议删除过久的数据以释放空间。</p>
+        </div>
+
+        <div class="am-g am-margin-top-sm">
+            {{if !empty($is_enable)}}
+                <a href="{{:PluginsAdminUrl('db_backup', 'admin', 'backup')}}" data-view="reload"  class="am-btn am-btn-success am-radius am-btn-xs cache-submit am-icon-database"> 新增备份</a>
+            {{else}}
+                <a data-url="{{:PluginsAdminUrl('db_backup', 'admin', 'open')}}"  data-view="reload" data-is-confirm=0 class="am-btn am-btn-secondary am-radius am-btn-xs submit-delete am-icon-check" data-id="db_backup"> 启用插件</a>
+                <span class="am-text-danger am-margin-left-xs">
+                    插件处于关闭状态，无法备份，仅可以下载和删除操作。需要备份请先启用后再进行备份操作。
+                </span>
+            {{/if}}
+        </div>
+
+        <table class="am-table am-table-striped am-table-hover am-text-middle am-margin-top-xs">
+            <thead>
+                <tr>
+                    <th>文件名称</th>
+                    <th>备份时间</th>
+                    <th>文件大小</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            {{if !empty($data_list)}}
+                {{foreach $data_list as $v}}
+                    <tr >
+                        <td class="am-hide-sm-only">{{$v.name}}</td>
+                        <td class="am-hide-sm-only">{{$v.time}}</td>
+                        <td class="am-hide-sm-only">{{$v.size}}</td>
+                        <td class="view-operation">
+                            <a class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-download " href="{{:PluginsAdminUrl('db_backup', 'admin', 'down_file',['id'=>$v['name']])}}"  > 下载</a>
+
+                            <button class="am-btn am-btn-danger am-btn-xs am-radius am-icon-trash-o submit-delete" data-url="{{:PluginsAdminUrl('db_backup', 'admin', 'del_file')}}" data-id="{{$v.name}}" data-view="reload"> 删除</button>
+                        </td>
+                    </tr>
+                {{/foreach}}
+            {{/if}}
+            </tbody>
+        </table>
+        {{if empty($data_list)}}
+            <div class="table-no"><i class="am-icon-warning"></i> 没有相关数据</div>
+        {{/if}}
+    </div>
+</div>
+<!-- right content end  -->
+
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

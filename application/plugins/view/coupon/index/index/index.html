@@ -1,0 +1,60 @@
+{{include file="public/header" /}}
+
+<!-- header top nav -->
+{{include file="public/header_top_nav" /}}
+
+<!-- search -->
+{{include file="public/nav_search" /}}
+
+<!-- header nav -->
+{{include file="public/header_nav" /}}
+
+<!-- goods category -->
+{{include file="public/goods_category" /}}
+
+<!-- content start -->
+<div class="am-g plugins-coupon">
+    {{if !empty($plugins_base['banner_images'])}}
+        <div class="plugins-coupon-banner am-text-center am-margin-bottom-xs" {{if !empty($plugins_base['banner_bg_color'])}}style="background:{{$plugins_base.banner_bg_color}};"{{/if}}>
+            <a href="{{if empty($plugins_base['banner_url'])}}javascript:;{{else /}}{{$plugins_base.banner_url}}{{/if}}" {{if isset($plugins_base['banner_is_window_open']) and $plugins_base['banner_is_window_open'] eq 1}}target="_blank"{{/if}}>
+                <img src="{{$plugins_base.banner_images}}" alt="优惠劵" />
+            </a>
+        </div>
+    {{/if}}
+    <div class="am-container plugins-coupon-receive-container">
+        {{if !empty($coupon_list)}}
+            <ul class="am-avg-sm-1 am-avg-md-2 am-avg-lg-3 plugins-coupon-items" data-receive-url="{{:PluginsHomeUrl('coupon', 'index', 'receive')}}">
+                {{foreach $coupon_list as $v}}
+                    <li data-is-operable="{{$v.is_operable}}" data-operable-name="{{$v.is_operable_name}}" data-coupon-id="{{$v.id}}">
+                        <div class="item am-cf {{if isset($v['is_operable']) and $v['is_operable'] eq 0}}coupon-disabled{{/if}}" {{if !empty($v['bg_color_value'])}}style="border:1px solid {{$v.bg_color_value}}"{{/if}}>
+                            <div class="v-left am-fl am-padding-left-sm am-padding-top-sm am-padding-bottom-sm">
+                                <div class="base am-text-truncate" {{if !empty($v['bg_color_value'])}}style="color:{{$v.bg_color_value}}"{{/if}}>
+                                    <span class="symbol">{{$price_symbol}}</span>
+                                    <span class="price">{{$v.discount_value}}</span>
+                                    <span class="unit">{{$v.type_unit}}</span>
+                                    {{if !empty($v['desc'])}}
+                                        <span class="desc am-margin-left-sm">{{$v.desc}}</span>
+                                    {{/if}}
+                                </div>
+                                {{if !empty($v['use_limit_type_name'])}}
+                                    <p class="tips am-text-truncate">{{$v.use_limit_type_name}}</p>
+                                {{/if}}
+                            </div>
+                            <div class="v-right am-fr am-vertical-align am-text-center {{if empty($user) and $v['is_operable'] eq 1}}login-event{{/if}}" {{if !empty($v['bg_color_value'])}}style="background:{{$v.bg_color_value}}"{{/if}}>
+                                <b class="semi-circle"></b>
+                                <div class="am-vertical-align-middle">{{$v.is_operable_name}}</div>
+                            </div>
+                        </div>
+                    </li>
+                {{/foreach}}
+            </ul>
+        {{else /}}
+            <div class="table-no"><i class="am-icon-warning"></i> 没有相关数据</div>
+        {{/if}}
+    </div>
+</div>
+<!-- content end -->
+
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

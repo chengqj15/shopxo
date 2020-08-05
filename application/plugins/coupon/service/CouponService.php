@@ -338,8 +338,8 @@ class CouponService
                 $v['use_value_ids_str'] = empty($v['use_value_ids_all']) ? '' : implode(',', $v['use_value_ids_all']);
 
                 // 过期时间
-                $v['fixed_time_start'] = empty($v['fixed_time_start']) ? '' : date('Y-m-d H:i:s', $v['fixed_time_start']);
-                $v['fixed_time_end'] = empty($v['fixed_time_end']) ? '' : date('Y-m-d H:i:s', $v['fixed_time_end']);
+                $v['fixed_time_start'] = empty($v['fixed_time_start']) ? '' : date('Y-m-d', $v['fixed_time_start']);
+                $v['fixed_time_end'] = empty($v['fixed_time_end']) ? '' : date('Y-m-d', $v['fixed_time_end']);
 
                 // 优惠金额/折扣美化
                 $v['discount_value'] = PriceBeautify($v['discount_value']);
@@ -360,7 +360,9 @@ class CouponService
                     if($v['use_limit_type'] == 1)
                     {
                         $v['category_names'] = Db::name('GoodsCategory')->where('id', 'in', $v['use_value_ids_all'])->column('name');
-
+                        if(empty($v['desc'])){
+                            $v['desc'] = '可用于:' . implode(",", $v['category_names']);
+                        }
                     // 商品
                     } else if($v['use_limit_type'] == 2)
                     {
@@ -368,6 +370,9 @@ class CouponService
                         if(isset($goods['data']))
                         {
                             $v['goods_items'] = $goods['data'];
+                            if(empty($v['desc'])){
+                                $v['desc'] = '部分商品可用';
+                            }
                         }
                     }
                 }

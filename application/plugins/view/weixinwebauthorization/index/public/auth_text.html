@@ -1,0 +1,3 @@
+{{if !empty($plugins_data['login_name'])}}
+    <a href="{{:PluginsHomeUrl('weixinwebauthorization', 'auth', 'index')}}" class="am-icon-weixin am-margin-left-xs am-text-success" target="_blank"> {{$plugins_data.login_name}}</a>
+{{/if}}

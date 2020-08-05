@@ -1,0 +1,345 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <legend>
+            <span class="fs-16">优惠劵管理</span>
+            <a href="{{:PluginsAdminUrl('coupon', 'admin', 'index')}}" class="fr fs-14 m-t-5 am-icon-mail-reply"> 返回</a>
+        </legend>
+
+        <div class="coupon-content">
+            <!-- form start -->
+            <form class="am-form form-validation form-search" method="post" action="{{:PluginsAdminUrl('coupon', 'coupon', 'index')}}" request-type="form">
+                <div class="thin">
+                    <div class="am-input-group am-input-group-sm am-fl so">
+                        <input type="text" autocomplete="off" name="keywords" class="am-radius" placeholder="名称/描述" value="{{if !empty($params.keywords)}}{{$params.keywords}}{{/if}}" />
+                        <span class="am-input-group-btn">
+                            <button class="am-btn am-btn-default am-radius" type="submit" data-am-loading="{spinner:'circle-o-notch', loadingText:'搜索中...'}">搜索</button>
+                        </span>
+                    </div>
+                    <label class="am-fl thin_sub more-submit">
+                        更多筛选条件
+                        {{if isset($params['is_more']) and $params['is_more'] eq 1}}
+                            <input type="checkbox" name="is_more" value="1" id="is_more" checked />
+                            <i class="am-icon-angle-up"></i>
+                        {{else /}}
+                            <input type="checkbox" name="is_more" value="1" id="is_more" />
+                            <i class="am-icon-angle-down"></i>
+                        {{/if}}
+                    </label>
+                </div>
+                <table class="so-list more-where {{if !isset($params['is_more'])}}none{{/if}}">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span>类型：</span>
+                                <select name="type" class="chosen-select" data-placeholder="优惠劵类型...">
+                                    <option value="-1">优惠劵类型...</option>
+                                    {{if !empty($coupon_type_list)}}
+                                        {{foreach $coupon_type_list as $v}}
+                                            <option value="{{$v.value}}" {{if isset($params['type']) and $params['type'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
+                                        {{/foreach}}
+                                    {{/if}}
+                                </select>
+                            </td>
+                            <td>
+                                <span>颜色：</span>
+                                <select name="bg_color" class="chosen-select" data-placeholder="背景颜色...">
+                                    <option value="-1">背景颜色...</option>
+                                    {{if !empty($coupon_bg_color_list)}}
+                                        {{foreach $coupon_bg_color_list as $v}}
+                                            <option value="{{$v.value}}" {{if isset($params['bg_color']) and $params['bg_color'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
+                                        {{/foreach}}
+                                    {{/if}}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span>过期：</span>
+                                <select name="expire_type" class="chosen-select" data-placeholder="过期类型...">
+                                    <option value="-1">过期类型...</option>
+                                    {{if !empty($common_expire_type_list)}}
+                                        {{foreach $common_expire_type_list as $v}}
+                                            <option value="{{$v.value}}" {{if isset($params['expire_type']) and $params['expire_type'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
+                                        {{/foreach}}
+                                    {{/if}}
+                                </select>
+                            </td>
+                            <td>
+                                <span>限制：</span>
+                                <select name="use_limit_type" class="chosen-select" data-placeholder="使用限制...">
+                                    <option value="-1">使用限制...</option>
+                                    {{if !empty($common_use_limit_type_list)}}
+                                        {{foreach $common_use_limit_type_list as $v}}
+                                            <option value="{{$v.value}}" {{if isset($params['use_limit_type']) and $params['use_limit_type'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
+                                        {{/foreach}}
+                                    {{/if}}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span>启用：</span>
+                                <select name="is_enable" class="chosen-select" data-placeholder="是否启用...">
+                                    <option value="-1">是否启用...</option>
+                                    {{if !empty($common_is_whether_list)}}
+                                        {{foreach $common_is_whether_list as $v}}
+                                            <option value="{{$v.value}}" {{if isset($params['is_enable']) and $params['is_enable'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
+                                        {{/foreach}}
+                                    {{/if}}
+                                </select>
+                            </td>
+                            <td>
+                                <span>领取：</span>
+                                <select name="is_user_receive" class="chosen-select" data-placeholder="是否开放领取...">
+                                    <option value="-1">是否开放领取...</option>
+                                    {{if !empty($common_is_whether_list)}}
+                                        {{foreach $common_is_whether_list as $v}}
+                                            <option value="{{$v.value}}" {{if isset($params['is_user_receive']) and $params['is_user_receive'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
+                                        {{/foreach}}
+                                    {{/if}}
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span>注册：</span>
+                                <select name="is_regster_send" class="chosen-select" data-placeholder="是否注册发放...">
+                                    <option value="-1">是否注册发放...</option>
+                                    {{if !empty($common_is_whether_list)}}
+                                        {{foreach $common_is_whether_list as $v}}
+                                            <option value="{{$v.value}}" {{if isset($params['is_regster_send']) and $params['is_regster_send'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
+                                        {{/foreach}}
+                                    {{/if}}
+                                </select>
+                            </td>
+                            <td>
+                                <button type="submit" class="am-btn am-btn-secondary am-radius am-btn-xs btn-loading-example" data-am-loading="{spinner:'circle-o-notch', loadingText:'搜索中...'}">搜索</button>
+                                <a href="{{:PluginsAdminUrl('coupon', 'coupon', 'index')}}" class="am-btn am-btn-warning am-radius am-btn-sm reset-submit">清除条件</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+            <!-- form end -->
+
+            <!-- operation start -->
+            <div class="am-g m-t-15">
+                <a href="{{:PluginsAdminUrl('coupon', 'coupon', 'saveinfo')}}" class="am-btn am-btn-secondary am-radius am-btn-xs am-icon-plus"> 新增</a>
+            </div>
+            <!-- operation end -->
+
+            <!-- tips -->
+            <div class="am-alert am-alert-warning" data-am-alert>
+                已发放优惠劵将不能编辑核心数据和删除操作
+            </div>
+
+            <!-- 列表 -->
+            <table class="am-table am-table-striped am-table-hover m-t-10">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th class="am-hide-sm-only">描述</th>
+                        <th class="am-hide-md-down">背景色</th>
+                        <th class="am-hide-md-down">过期类型</th>
+                        <th class="am-hide-md-down">使用限制</th>
+                        <th>优惠信息</th>
+                        <th class="am-hide-sm-only">发放数量</th>
+                        <th class="am-hide-sm-only">是否启用</th>
+                        <th class="am-hide-md-down">开放领取</th>
+                        <th class="am-hide-md-down">注册发放</th>
+                        <th>更多</th>
+                        <th class="th-operation">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{if !empty($data_list)}}
+                        {{foreach $data_list as $v}}
+                            <tr id="data-list-{{$v.id}}" {{if $v['is_enable'] eq 0}}class="am-active"{{/if}}>
+                                <td>
+                                    {{$v.name}}
+                                    <span class="am-badge am-radius {{if $v['type'] eq 0}}am-badge-success{{else /}}am-badge-warning{{/if}}">
+                                        {{if $v['type'] eq 0}}减{{else /}}折{{/if}}
+                                    </span>
+                                    {{if isset($v['is_operable']) and $v['is_operable'] eq 0}}
+                                        <br /><span class="am-text-danger">{{$v.is_operable_name}}</span>
+                                    {{/if}}
+                                </td>
+                                <td class="am-hide-sm-only">{{$v.desc}}</td>
+                                <td class="am-hide-md-down">{{$v.bg_color_name}}</td>
+                                <td class="am-hide-md-down">{{$v.expire_type_name}}</td>
+                                <td class="am-hide-md-down">
+                                    {{$v.use_limit_type_name}}
+                                    {{if $v['use_limit_type'] eq 1}}
+                                        <br /><span class="am-text-warning">仅限关联的品类下使用</span>
+                                    {{elseif $v['use_limit_type'] eq 2}}
+                                        <br /><span class="am-text-warning">仅限关联的商品使用</span>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    {{if $v['type'] eq 0}}
+                                        减 <span class="am-text-success">{{$v.discount_value}}</span> 元
+                                    {{else /}}
+                                        打 <span class="am-text-warning">{{$v.discount_value}}</span> 折
+                                    {{/if}}
+                                </td>
+                                <td class="am-hide-sm-only">
+                                    {{if $v['limit_send_count'] gt 0}}
+                                        最多发放 <span class="am-text-danger">{{$v.limit_send_count}}</span> 张
+                                    {{else /}}
+                                        不限发放数量
+                                    {{/if}}
+                                    {{if $v['already_send_count'] gt 0}}
+                                        <br />已发放<span class="am-text-success">{{$v.already_send_count}}</span>张
+                                    {{/if}}
+                                </td>
+                                <td class="am-hide-sm-only">
+                                    <a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_enable'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:PluginsAdminUrl('coupon', 'coupon', 'statusupdate')}}" data-id="{{$v.id}}" data-state="{{$v['is_enable']}}" data-is-update-status="1" data-field="is_enable"></a>
+                                </td>
+                                <td class="am-hide-md-down">
+                                    <a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_user_receive'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:PluginsAdminUrl('coupon', 'coupon', 'statusupdate')}}" data-id="{{$v.id}}" data-state="{{$v['is_user_receive']}}" data-field="is_user_receive"></a>
+                                </td>
+                                <td class="am-hide-md-down">
+                                    <a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_regster_send'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:PluginsAdminUrl('coupon', 'coupon', 'statusupdate')}}" data-id="{{$v.id}}" data-state="{{$v['is_regster_send']}}" data-field="is_regster_send"></a>
+                                </td>
+                                <td>
+                                    <span class="am-icon-caret-down c-p" data-am-modal="{target: '#my-popup{{$v.id}}'}"> 查看更多</span>
+                                    <div class="am-popup am-radius" id="my-popup{{$v.id}}">
+                                        <div class="am-popup-inner">
+                                            <div class="am-popup-hd">
+                                                <h4 class="am-popup-title">详情内容</h4>
+                                                <span data-am-modal-close
+                                                class="am-close">&times;</span>
+                                            </div>
+                                            <div class="am-popup-bd">
+                                                <dl class="dl-content">
+                                                    <dt>名称</dt>
+                                                    <dd>
+                                                        {{$v.name}}
+                                                        <span class="am-badge am-radius {{if $v['type'] eq 0}}am-badge-success{{else /}}am-badge-warning{{/if}}">{{$v.type_name}}</span>
+                                                        {{if isset($v['is_operable']) and $v['is_operable'] eq 0}}
+                                                            <br /><span class="am-text-danger">{{$v.is_operable_name}}</span>
+                                                        {{/if}}
+                                                    </dd>
+
+                                                    <dt>描述</dt>
+                                                    <dd>{{$v.desc}}</dd>
+
+                                                    <dt>背景色</dt>
+                                                    <dd>{{$v.bg_color_name}}</dd>
+
+                                                    <dt>过期类型</dt>
+                                                    <dd>
+                                                        {{$v.expire_type_name}}
+                                                        {{if $v['expire_type'] eq 0}}
+                                                            <span class="am-badge am-radius">有效 {{$v.expire_hour}} 小时</span>
+                                                        {{else /}}
+                                                            <span class="am-badge am-radius">{{$v.fixed_time_start}} ~ {{$v.fixed_time_end}}</span>
+                                                        {{/if}}
+                                                    </dd>
+
+                                                    <dt>使用限制</dt>
+                                                    <dd>
+                                                        {{$v.use_limit_type_name}}
+                                                        {{if $v['use_limit_type'] eq 1}}
+                                                            <p class="am-text-warning">仅限关联的品类下使用</p>
+                                                            {{if !empty($v['category_names'])}}
+                                                                <ul class="am-list am-list-static am-list-border detail-limit-value-category">
+                                                                    {{foreach $v.category_names as $name}}
+                                                                        <li>{{$name}}</li>
+                                                                    {{/foreach}}
+                                                                </ul>
+                                                            {{/if}}
+                                                        {{elseif $v['use_limit_type'] eq 2}}
+                                                            <p class="am-text-warning">仅限关联的商品使用</p>
+                                                            {{if !empty($v['goods_items'])}}
+                                                                <ul class="am-list am-list-static am-list-border detail-limit-value-goods">
+                                                                    {{foreach $v.goods_items as $goods}}
+                                                                        <li>
+                                                                            <a href="{{$goods.goods_url}}" target="_blank">{{$goods.title}}</a>
+                                                                        </li>
+                                                                    {{/foreach}}
+                                                                </ul>
+                                                            {{/if}}
+                                                        {{/if}}
+                                                    </dd>
+
+                                                    <dt>优惠信息</dt>
+                                                    <dd>
+                                                        {{if $v['type'] eq 0}}
+                                                            减 <span class="am-text-success">{{$v.discount_value}}</span> 元
+                                                        {{else /}}
+                                                            打 <span class="am-text-warning">{{$v.discount_value}}</span> 折
+                                                        {{/if}}
+                                                    </dd>
+
+                                                    <dt>发放限制</dt>
+                                                    <dd>
+                                                        {{if $v['limit_send_count'] gt 0}}
+                                                            最多发放 <span class="am-text-danger">{{$v.limit_send_count}}</span> 张
+                                                        {{else /}}
+                                                            不限发放数量
+                                                        {{/if}}
+                                                        {{if $v['already_send_count'] gt 0}}
+                                                            <br />已发放<span class="am-text-success">{{$v.already_send_count}}</span>张
+                                                        {{/if}}
+                                                    </dd>
+
+                                                    <dt>是否开启</dt>
+                                                    <dd>{{$v.is_enable_name}}</dd>
+
+                                                    <dt>是否开放领取</dt>
+                                                    <dd>{{$v.is_user_receive_name}}</dd>
+
+                                                    <dt>是否注册发放</dt>
+                                                    <dd>{{$v.is_regster_send_name}}</dd>
+
+                                                    <dt>添加时间</dt>
+                                                    <dd>{{$v.add_time_time}}</dd>
+
+                                                    <dt>更新时间</dt>
+                                                    <dd>{{$v.upd_time_time}}</dd>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="td-operation">
+                                    <a href="{{:PluginsAdminUrl('coupon', 'coupon', 'saveinfo', array_merge($params, ['id'=>$v['id']]))}}">
+                                        <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-edit"> 编辑</button>
+                                    </a>
+                                    <a href="{{:PluginsAdminUrl('coupon', 'coupon', 'sendinfo', array_merge($params, ['id'=>$v['id']]))}}" class="am-block am-margin-top-xs">
+                                        <button class="am-btn am-btn-success am-btn-xs am-radius am-icon-send-o"> 发放</button>
+                                    </a>
+                                    {{if $v['already_send_count'] gt 0}}
+                                        <a href="{{:PluginsAdminUrl('coupon', 'user', 'index', ['coupon_id'=>$v['id'], 'is_more'=>1])}}" class="am-block am-margin-top-xs">
+                                            <button class="am-btn am-btn-default am-btn-xs am-radius am-icon-user"> 用户</button>
+                                        </a>
+                                    {{else /}}
+                                        <button class="am-btn am-btn-danger am-btn-xs am-radius am-icon-trash-o submit-delete am-margin-top-xs" data-url="{{:PluginsAdminUrl('coupon', 'coupon', 'delete')}}" data-id="{{$v.id}}"> 删除</button>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                        {{/foreach}}
+                    {{/if}}
+                </tbody>
+            </table>
+
+            {{if empty($data_list)}}
+                <div class="table-no"><i class="am-icon-warning"></i> 没有相关数据</div>
+            {{/if}}
+
+            <!-- 分页 -->
+            {{if !empty($data_list)}}
+                {{$page_html|raw}}
+            {{/if}}
+        </div>
+    </div>
+</div>
+<!-- right content end  -->
+        
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

@@ -1,0 +1,13 @@
+{{if !empty($data)}}
+    {{foreach $data as $user}}
+        <li class="am-text-center am-padding-sm">
+            <i class="submit-icon am-icon-plus" data-user-id="{{$user.id}}" data-user-view="{{$user.user_name_view}}" data-user-avatar="{{$user.avatar}}"></i>
+            <div class="items am-padding-sm">
+                <img src="{{$user.avatar}}" alt="{{$user.user_name_view}}" class="am-img-thumbnail am-circle am-block" />
+                <p class="am-text-truncate am-margin-top-xs">{{$user.user_name_view}}</p>
+            </div>
+        </li>
+    {{/foreach}}
+{{else /}}
+    <div class="table-no"><i class="am-icon-warning"></i> 没有相关用户</div>
+{{/if}}

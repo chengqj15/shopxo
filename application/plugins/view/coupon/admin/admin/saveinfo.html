@@ -1,0 +1,66 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <!-- form start -->
+        <form class="am-form form-validation view-save" action="{{:PluginsAdminUrl('coupon', 'admin', 'save')}}" method="POST" request-type="ajax-url" request-value="{{:PluginsAdminUrl('coupon', 'admin', 'index')}}">
+            <legend>
+                <span class="fs-16">配置管理</span>
+                <a href="{{:PluginsAdminUrl('coupon', 'admin', 'index')}}" class="fr fs-14 m-t-5 am-icon-mail-reply"> 返回</a>
+            </legend>
+
+            <div class="am-form-group">
+                <label>应用导航名称<span class="am-form-group-label-tips">空则不显示</span></label>
+                <input type="text" name="application_name" placeholder="应用导航名称" maxlength="16" data-validation-message="应用导航名称格式最多 16 个字符" class="am-radius" {{if !empty($data['application_name'])}} value="{{$data.application_name}}"{{/if}} />
+            </div>
+            
+            <div class="am-form-group">
+                <label class="block">允许用户重复领取<span class="am-form-group-label-tips">默认否</span></label>
+                <input name="is_repeat_receive" value="1" type="checkbox" data-off-text="否" data-on-text="是" data-size="xs" data-on-color="success" data-off-color="default" data-handle-width="50" data-am-switch {{if isset($data['is_repeat_receive']) and $data['is_repeat_receive'] eq 1}}checked="true"{{/if}} />
+            </div>
+
+            <div class="am-form-group am-form-file">
+                <label class="block">顶部大图<span class="am-form-group-label-tips">建议1200像数X320像数</span></label>
+                <ul class="plug-file-upload-view plugins-banner_images-view" data-form-name="banner_images" data-max-number="1" data-dialog-type="images">
+                    {{if !empty($data['banner_images'])}}
+                        <li>
+                            <input type="text" name="banner_images" value="{{$data.banner_images_old}}" data-validation-message="请上传顶部大图" />
+                            <img src="{{$data.banner_images}}" />
+                            <i>×</i>
+                        </li>
+                    {{/if}}
+                </ul>
+                <div class="plug-file-upload-submit" data-view-tag="ul.plugins-banner_images-view">+上传图片</div>
+            </div>
+
+            <div class="am-form-group">
+                <label>背景色</label>
+                <input type="hidden" name="banner_bg_color" value="{{if !empty($data['banner_bg_color'])}}{{$data.banner_bg_color}}{{/if}}" />
+                <button class="am-btn am-btn-default am-btn-xs colorpicker-submit bg-color-tag am-btn-block bk-cr-white t-r" type="button" data-input-tag="button.bg-color-tag" data-color-tag="input[name='banner_bg_color']" data-color-style="background-color" {{if !empty($data['banner_bg_color'])}}style="background:{{$data.banner_bg_color}}"{{/if}}>
+                    <img src="{{$attachment_host}}/static/common/images/colorpicker.png" />
+                </button>
+            </div>
+
+            <div class="am-form-group">
+                <label>链接地址<span class="am-form-group-label-tips">带http://或https://</span></label>
+                <input type="url" placeholder="链接地址" name="banner_url"  data-validation-message="链接地址格式有误" class="am-radius" {{if !empty($data['banner_url'])}} value="{{$data.banner_url}}"{{/if}} />
+            </div>
+
+            <div class="am-form-group">
+                <label class="block">是否新窗口打开<span class="am-form-group-label-tips">默认否</span></label>
+                <input name="banner_is_window_open" value="1" type="checkbox" data-off-text="否" data-on-text="是" data-size="xs" data-on-color="success" data-off-color="default" data-handle-width="50" data-am-switch {{if isset($data['banner_is_window_open']) and $data['banner_is_window_open'] eq 1}}checked="true"{{/if}} />
+            </div>
+
+            <div class="am-form-group am-form-group-refreshing">
+                <button type="submit" class="am-btn am-btn-primary am-radius btn-loading-example am-btn-sm am-btn-block" data-am-loading="{loadingText:'处理中...'}">保存</button>
+            </div>
+        </form>
+        <!-- form end -->
+    </div>
+</div>
+<!-- right content end  -->
+        
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->

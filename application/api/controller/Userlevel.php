@@ -34,6 +34,10 @@ class UserLevel extends Common
             $ret['data']['payment_list'] = $payment_list;
             $task_list = UserLevelService::getTashList($params);
             $ret['data']['task_list'] = $task_list;
+
+            $level = $ret['data']['level'];
+            $images = MyUrl('index/qrcode/index', ['content'=>urlencode(base64_encode($level['level_no']))]);
+            $ret['data']['level']['qrcode'] = $images;
         }
         return $ret;
     }

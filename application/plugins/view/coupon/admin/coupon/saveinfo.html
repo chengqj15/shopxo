@@ -1,0 +1,226 @@
+{{include file="public/header" /}}
+
+<!-- right content start  -->
+<div class="content-right">
+    <div class="content">
+        <!-- form start -->
+        <form class="am-form form-validation view-save" action="{{:PluginsAdminUrl('coupon', 'coupon', 'save')}}" method="POST" request-type="ajax-url" request-value="{{:PluginsAdminUrl('coupon', 'coupon', 'index', $params)}}">
+            <legend>
+                <span class="fs-16">优惠劵{{if empty($data)}}添加{{else /}}编辑{{/if}}</span>
+                <a href="{{:PluginsAdminUrl('coupon', 'coupon', 'index', $params)}}" class="fr fs-14 m-t-5 am-icon-mail-reply"> 返回</a>
+            </legend>
+
+            <!-- tips -->
+            <div class="am-alert am-alert-warning" data-am-alert>
+                已发放优惠劵将不能编辑核心数据和删除操作
+            </div>
+
+            <!-- 基础 -->
+            <div class="am-panel am-panel-secondary">
+                <div class="am-panel-hd">基础</div>
+                <div class="am-panel-bd">
+                    <div class="am-form-group">
+                        <label>优惠劵名称<span class="am-form-group-label-tips">如 满300减10</span></label>
+                        <input type="text" name="name" placeholder="请输入优惠劵名称" maxlength="30" data-validation-message="优惠劵名称格式最多 30 个字符" class="am-radius" {{if !empty($data['name'])}} value="{{$data.name}}"{{/if}} required />
+                    </div>
+
+                    <div class="am-form-group">
+                        <label>优惠劵描述</label>
+                        <input type="text" name="desc" placeholder="请输入优惠劵描述" maxlength="60" data-validation-message="优惠劵描述格式最多 60 个字符" class="am-radius" {{if !empty($data['desc'])}} value="{{$data.desc}}"{{/if}} />
+                    </div>
+
+                    <div class="am-form-group">
+                        <label>优惠券颜色<span class="am-form-group-label-tips">默认红色</span></label>
+                        <div>
+                            {{foreach $coupon_bg_color_list as $v}}
+                                <label class="am-radio-inline am-margin-right-sm">
+                                    <input type="radio" name="bg_color" value="{{$v.value}}" {{if isset($data['bg_color']) and $data['bg_color'] eq $v['value']}}checked="checked"{{else /}}{{if !isset($data['bg_color']) and isset($v['checked']) and $v['checked'] eq true}}checked="checked"{{/if}}{{/if}} data-am-ucheck /> {{$v.name}}
+                                </label>
+                            {{/foreach}}
+                        </div>
+                    </div>
+
+                    {{if !isset($data['id']) or $data['already_send_count'] elt 0}}
+                        <div class="am-form-group">
+                            <label class="block">购买金额<span class="am-form-group-label-tips">0代表不需要付款</span></label>
+                            <input name="is_paid" value="1" type="checkbox" data-off-text="否" data-on-text="是" data-size="xs" data-on-color="success" data-off-color="default" data-handle-width="50" data-am-switch {{if isset($data['is_paid']) and $data['is_paid'] eq 1}}checked="true"{{/if}} />
+                            <input type="number" name="buy_amount" {{if isset($data['is_paid']) and $data['is_paid'] eq 1}}readonly{{/if}} placeholder="请输入购买金额" min="0" data-validation-message="购买金额输入 大于等于0的整数" class="am-radius" {{if !empty($data['buy_amount'])}} value="{{$data.buy_amount}}"{{/if}} />
+                        </div>
+                        <div class="am-form-group">
+                            <label>优惠券类型</label>
+                            <div>
+                                {{foreach $coupon_type_list as $v}}
+                                    <label class="am-radio-inline am-margin-right-sm">
+                                        <input type="radio" name="type" value="{{$v.value}}" {{if isset($data['type']) and $data['type'] eq $v['value']}}checked="checked"{{else /}}{{if !isset($data['type']) and isset($v['checked']) and $v['checked'] eq true}}checked="checked"{{/if}}{{/if}} data-am-ucheck /> {{$v.name}}
+                                    </label>
+                                {{/foreach}}
+                            </div>
+                        </div>
+
+                        <div class="am-form-group coupon-form-discount-price" {{if isset($data['type']) and $data['type'] neq 0}}style="display: none;"{{/if}}>
+                            <label>减免金额</label>
+                            <input type="number" name="discount_price" min="0.01" step="0.01" placeholder="请输入订减免金额" data-validation-message="请输入有效的减免金额 最低0.01元" class="am-radius" {{if !empty($data['discount_value'])}} value="{{$data.discount_value}}"{{/if}} />
+                        </div>
+
+                        <div class="am-form-group coupon-form-discount-rate" {{if !isset($data['type']) or $data['type'] neq 1}}style="display: none;"{{/if}}>
+                            <label>折扣率<span class="am-form-group-label-tips">折扣率范围0-10，9.5代表9.5折，0或空代表无折扣</span></label>
+                            <input type="number" name="discount_rate" placeholder="请输入折扣率" min="0.01" max="10.00" step="0.01" data-validation-message="折扣率应输入 0.01~10 的数字,小数保留两位" class="am-radius" {{if !empty($data['discount_value'])}} value="{{$data.discount_value}}"{{/if}} />
+                        </div>
+                    {{/if}}
+
+                    <div class="am-form-group">
+                        <label>顺序</label>
+                        <input type="number" placeholder="顺序" name="sort" min="0" max="255" data-validation-message="顺序 0~255 之间的数值" class="am-radius" value="{{if isset($data['sort'])}}{{$data.sort}}{{else /}}0{{/if}}" required />
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="block">是否启用<span class="am-form-group-label-tips">默认否</span></label>
+                        <input name="is_enable" value="1" type="checkbox" data-off-text="否" data-on-text="是" data-size="xs" data-on-color="success" data-off-color="default" data-handle-width="50" data-am-switch {{if isset($data['is_enable']) and $data['is_enable'] eq 1}}checked="true"{{/if}} />
+                    </div>
+                </div>
+            </div>
+
+            <!-- 时间 -->
+            {{if !isset($data['id']) or $data['already_send_count'] elt 0}}
+                <div class="am-panel am-panel-secondary">
+                    <div class="am-panel-hd">有效时间</div>
+                    <div class="am-panel-bd">
+                        <div class="am-form-group">
+                            <label>到期类型</label>
+                            <div>
+                                {{foreach $common_expire_type_list as $v}}
+                                    <label class="am-radio-inline am-margin-right-sm">
+                                        <input type="radio" name="expire_type" value="{{$v.value}}" {{if isset($data['expire_type']) and $data['expire_type'] eq $v['value']}}checked="checked"{{else /}}{{if !isset($data['expire_type']) and isset($v['checked']) and $v['checked'] eq true}}checked="checked"{{/if}}{{/if}} data-am-ucheck /> {{$v.name}}
+                                    </label>
+                                {{/foreach}}
+                            </div>
+                        </div>
+
+                        <div class="am-form-group coupon-form-expire-hour coupon-form-no-bottom-style" {{if isset($data['expire_type']) and $data['expire_type'] neq 0}}style="display: none;"{{/if}}>
+                            <label>有效小时<span class="am-form-group-label-tips">单位 时</span></label>
+                            <input type="number" name="expire_hour" placeholder="请输入有效小时" min="1" data-validation-message="有效小时最低1小时起" class="am-radius" {{if !empty($data['expire_hour'])}} value="{{$data.expire_hour}}"{{/if}} required />
+                        </div>
+
+                        <div class="am-form-group coupon-form-fixed-time" {{if !isset($data['expire_type']) or $data['expire_type'] neq 1}}style="display: none;"{{/if}}>
+                            <label>限时时间<span class="am-form-group-label-tips">空则不限</span></label>
+                            <div>
+                                <input type="text" autocomplete="off" name="fixed_time_start" class="Wdate am-radius m-t-10" placeholder="开始时间" data-validation-message="请选择限时开始时间" onclick="WdatePicker({firstDayOfWeek:1,dateFmt:'yyyy-MM-dd',minDate:'%y-%M-%d',maxDate:'#F{$dp.$D(\'input-fixed-time-end\');}'})" {{if !empty($data['fixed_time_start'])}}value="{{$data.fixed_time_start}}"{{/if}} id="input-fixed-time-start" required />
+                                <span>~</span>
+                                <input type="text" autocomplete="off" class="Wdate am-radius m-t-10" placeholder="结束时间" data-validation-message="请选择限时结束时间" name="fixed_time_end" onclick="WdatePicker({firstDayOfWeek:1,dateFmt:'yyyy-MM-dd',minDate:'#F{$dp.$D(\'input-fixed-time-start\')||\'{{:date(\'Y-m-d\')}}\';}'})" {{if !empty($data['fixed_time_end'])}}value="{{$data.fixed_time_end}}"{{/if}} id="input-fixed-time-end" required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 使用条件 -->
+                <div class="am-panel am-panel-secondary">
+                    <div class="am-panel-hd">使用条件</div>
+                    <div class="am-panel-bd">
+                        <div class="am-form-group">
+                            <label>订单最低金额<span class="am-form-group-label-tips">订单消费最低金额条件</span></label>
+                            <input type="number" name="where_order_price" min="0.00" step="0.01" placeholder="请输入订单最低金额" data-validation-message="请输入有效的订单最低金额" class="am-radius" {{if !empty($data['where_order_price'])}} value="{{$data.where_order_price}}"{{/if}} required />
+                        </div>
+
+                        <div class="am-form-group coupon-form-no-bottom-style">
+                            <label>使用限制</label>
+                            <div>
+                                {{foreach $common_use_limit_type_list as $v}}
+                                    <label class="am-radio-inline am-margin-right-sm">
+                                        <input type="radio" name="use_limit_type" value="{{$v.value}}" {{if isset($data['use_limit_type']) and $data['use_limit_type'] eq $v['value']}}checked="checked"{{else /}}{{if !isset($data['use_limit_type']) and isset($v['checked']) and $v['checked'] eq true}}checked="checked"{{/if}}{{/if}} data-am-ucheck /> {{$v.name}}
+                                    </label>
+                                {{/foreach}}
+                            </div>
+                        </div>
+
+                        <div class="am-form-group coupon-use-goods-category coupon-form-no-bottom-style" {{if !isset($data['use_limit_type']) or $data['use_limit_type'] neq 1}}style="display: none;"{{/if}}>
+                            <label class="am-block">关联可使用商品分类<span class="am-form-group-label-tips">为空则所有分类可用</span></label>
+                            <select name="category_ids" class="am-radius chosen-select" multiple="multiple" minchecked="1" data-placeholder="请选择..." data-validation-message="请选择商品分类">
+                                {{if !empty($category_list)}}
+                                    {{foreach $category_list as $v}}
+                                        <option value="{{$v.id}}" {{if isset($data['use_limit_type']) and $data['use_limit_type'] eq 1 and !empty($data['use_value_ids_all']) and in_array($v['id'], $data['use_value_ids_all'])}}selected{{/if}}>一级 - {{$v.name}}</option>
+                                        {{if !empty($v['items'])}}
+                                            {{foreach $v.items as $vs}}
+                                                <option style="padding-left: 30px;" value="{{$vs.id}}" {{if isset($data['use_limit_type']) and $data['use_limit_type'] eq 1 and !empty($data['use_value_ids_all']) and in_array($vs['id'], $data['use_value_ids_all'])}}selected{{/if}}>二级-{{$vs.name}}</option>
+                                                {{if !empty($vs['items'])}}
+                                                    {{foreach $vs.items as $vss}}
+                                                        <option style="padding-left: 60px;" value="{{$vss.id}}" {{if isset($data['use_limit_type']) and $data['use_limit_type'] eq 1 and !empty($data['use_value_ids_all']) and in_array($vss['id'], $data['use_value_ids_all'])}}selected{{/if}}>三级-{{$vss.name}}</option>
+                                                    {{/foreach}}
+                                                {{/if}}
+                                            {{/foreach}}
+                                        {{/if}}
+                                    {{/foreach}}
+                                {{/if}}
+                            </select>
+                        </div>
+
+                        <div class="am-form-group coupon-use-goods-content" {{if !isset($data['use_limit_type']) or $data['use_limit_type'] neq 2}}style="display: none;"{{/if}}>
+                            <label class="am-block">关联可使用商品</label>
+                            <div class="forth-selection-container">
+                                <div class="forth-selection-form" data-search-url="{{:PluginsAdminUrl('coupon', 'coupon', 'search')}}">
+                                    <input type="text" placeholder="商品名称" class="am-radius forth-selection-form-keywords" />
+                                    <button type="button" class="am-btn am-btn-secondary am-radius am-btn-sm search-submit">搜索</button>
+                                </div>
+                                <div class="am-form-group am-form-group-refreshing forth-selection-list">
+                                    <input type="hidden" name="goods_ids" value="{{if isset($data['use_limit_type']) and $data['use_limit_type'] eq 2 and !empty($data['use_value_ids_str'])}}{{$data.use_value_ids_str}}{{/if}}" />
+                                    <div class="forth-selection-items am-fl">
+                                        <div class="title">可选</div>
+                                        <ul class="forth-selection-content am-list ul-left">
+                                            <div class="table-no">没有相关数据</div>
+                                        </ul>
+                                    </div>
+                                    <button type="button" class="am-btn am-btn-default am-btn-xs selected-all">全选 <i class="am-icon-angle-double-right"></i></button>
+                                    <div class="forth-selection-items am-fr">
+                                        <div class="title">已选</div>
+                                        <ul class="forth-selection-content am-list ul-right">
+                                            <div class="table-no {{if !empty($data['goods_items'])}}none{{/if}}">没有相关数据</div>
+                                            {{if !empty($data['goods_items'])}}
+                                                {{foreach $data.goods_items as $v}}
+                                                    <li class="am-animation-slide-bottom items-li-{{$v.id}}">
+                                                        <span class="name" data-value="{{$v.id}}">{{$v.title}}</span>
+                                                        <i class="am-icon-trash-o am-fr"></i>
+                                                    </li>
+                                                {{/foreach}}
+                                            {{/if}}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+
+            <!-- 发放限制 -->
+            <div class="am-panel am-panel-secondary">
+                <div class="am-panel-hd">发放限制</div>
+                <div class="am-panel-bd">
+                    <div class="am-form-group">
+                        <label>发放总数量<span class="am-form-group-label-tips">空或0则不限</span></label>
+                        <input type="number" name="limit_send_count" placeholder="请输入发放总数量" data-validation-message="请输入有效的发放总数量" class="am-radius" {{if !empty($data['limit_send_count'])}} value="{{$data.limit_send_count}}"{{/if}} />
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="block">开放用户领取<span class="am-form-group-label-tips">默认否</span></label>
+                        <input name="is_user_receive" value="1" type="checkbox" data-off-text="否" data-on-text="是" data-size="xs" data-on-color="success" data-off-color="default" data-handle-width="50" data-am-switch {{if isset($data['is_user_receive']) and $data['is_user_receive'] eq 1}}checked="true"{{/if}} />
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="block">注册即发放<span class="am-form-group-label-tips">默认否</span></label>
+                        <input name="is_regster_send" value="1" type="checkbox" data-off-text="否" data-on-text="是" data-size="xs" data-on-color="success" data-off-color="default" data-handle-width="50" data-am-switch {{if isset($data['is_regster_send']) and $data['is_regster_send'] eq 1}}checked="true"{{/if}} />
+                    </div>
+                </div>
+            </div>
+
+            <div class="am-form-group am-form-group-refreshing">
+                <input type="hidden" name="id" {{if !empty($data['id'])}} value="{{$data.id}}"{{/if}} />
+                <button type="submit" class="am-btn am-btn-primary am-radius btn-loading-example am-btn-sm am-btn-block" data-am-loading="{loadingText:'处理中...'}">保存</button>
+            </div>
+        </form>
+        <!-- form end -->
+    </div>
+</div>
+<!-- right content end  -->
+        
+<!-- footer start -->
+{{include file="public/footer" /}}
+<!-- footer end -->
