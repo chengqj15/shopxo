@@ -221,7 +221,10 @@ class OrderAftersaleService
         ];
         if(Db::name('OrderAftersale')->insertGetId($data) > 0)
         {
-            return DataReturn('申请成功', 0);
+            $data = [
+                'notice_ids'    => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec,dyCdhTUD9QaKj2qWRDLRjfBTUhUywMnb2DPbQVnZiEE',
+            ];
+            return DataReturn('申请成功', 0, $data);
         }
         return DataReturn('申请失败', -100);
     }
@@ -900,7 +903,7 @@ class OrderAftersaleService
      * @param   [array]          $order     [订单数据]
      * @param   [array]          $pay_log   [订单支付日志]
      */
-    private static function OriginalRoadRefundment($params, $aftersale, $order, $pay_log)
+    public static function OriginalRoadRefundment($params, $aftersale, $order, $pay_log)
     {
         // 支付方式
         $payment = PaymentService::PaymentList(['where'=>['payment'=>$pay_log['payment']]]);
@@ -1166,7 +1169,7 @@ class OrderAftersaleService
         $order = Db::name('Order')->where(['id'=>$order_id])->field('id,status,pay_status,buy_number_count,increase_price,preferential_price,price,total_price,pay_price,refund_price,returned_quantity')->find();
         if(!empty($order))
         {
-            $dateil = Db::name('OrderDetail')->where(['order_id'=>$order_id])->field('id,price,total_price,buy_number,refund_price,returned_quantity')->select();
+            $dateil = Db::name('OrderDetail')->where(['order_id'=>$order_id])->field('id,price,total_price,discount_price,discount_total_price,buy_number,refund_price,returned_quantity')->select();
             if(!empty($dateil))
             {
                 foreach($dateil as $v)
@@ -1194,17 +1197,17 @@ class OrderAftersaleService
                     if($v['id'] == $order_detail_id)
                     {
                         $returned_quantity = $v['buy_number']-$v['returned_quantity'];
-                        $refund_price = $v['price']*$returned_quantity;
-                        if($refund_price+$v['refund_price'] > $v['total_price'])
+                        $refund_price = $v['discount_price']*$returned_quantity;
+                        if($refund_price+$v['refund_price'] > $v['discount_total_price'])
                         {
-                            $refund_price = $v['total_price']-$v['refund_price'];
+                            $refund_price = $v['discount_total_price']-$v['refund_price'];
                         }
                     } else {
                         // 未发生
                         if($v['returned_quantity'] <= 0 && $v['refund_price'] <= 0.00)
                         {
                             $not_returned_quantity += $v['buy_number'];
-                            $not_refund_price += $v['total_price'];
+                            $not_refund_price += $v['discount_total_price'];
                         }
                     }
                 }
@@ -1220,11 +1223,12 @@ class OrderAftersaleService
             }
 
             // 如果最后一件退款则加上增加的金额，减去优惠家呢
-            if(PriceNumberFormat($history_refund_price+$refund_price) >= $order['price'])
-            {
-                $refund_price += $order['increase_price'];
-                $refund_price -= $order['preferential_price'];
-            }
+            // if(PriceNumberFormat($history_refund_price+$refund_price) >= $order['price'])
+            // {
+            //     // $refund_price += $order['increase_price'];
+            //     // $refund_price -= $order['preferential_price'];
+            //     $refund_price = $order['price'];
+            // }
 
             // 如果退款金额大于支付金额，则支付金额减去已退款金额
             $temp_price = PriceNumberFormat($refund_price+$history_refund_price);

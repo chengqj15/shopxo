@@ -66,8 +66,8 @@ class GoodsService
         }
 
         // 获取分类
-        // $params['where'] = ['pid'=>0, 'is_enable'=>1];
-        $params['where'] = ['pid'=>0];
+        $params['where'] = ['pid'=>0, 'is_enable'=>1];
+        // $params['where'] = ['pid'=>0];
         $data = self::GoodsCategoryTmp($params);
 
         // 存储缓存

@@ -122,6 +122,7 @@ alter table s_system_user_level add column `point` int(11) NOT NULL DEFAULT '0' 
 alter table s_system_user_level add column `valid_type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1=年;2=月;0=天' after valid_date;
 alter table s_system_user_level add column `free_package_count` int(11) NOT NULL DEFAULT '0.00' COMMENT '免打包费次数' after discount;
 
+alter table s_order add column `service_fee_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '免打包费' after `service_fee`;
 
 --
 -- 表的结构 `eb_system_user_task`
@@ -143,4 +144,11 @@ CREATE TABLE IF NOT EXISTS `s_system_user_task` (
   `upd_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='等级任务设置' AUTO_INCREMENT=1 ;
+
+alter table `s_order_detail` add column `discount_price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '折前价格' after `original_price`;
+alter table `s_order_detail` add column `deliver_number` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '发货数量' after `buy_number`;
+update `s_order_detail` set deliver_number=buy_number;
+update `s_order_detail` set before_discount_price=price;
+
+alter table `s_order` add column `out_of_stock` tinyint(1) NOT NULL DEFAULT '0' COMMENT '缺货处理' after `order_model`;
 

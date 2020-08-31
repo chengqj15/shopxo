@@ -97,6 +97,18 @@ class Orderaftersale extends Common
         return $this->fetch();
     }
 
+    public function Create()
+    {
+        // 是否ajax请求
+        if(!IS_AJAX)
+        {
+            return $this->error('非法访问');
+        }
+
+        $params = input();
+        return OrderAftersaleService::AftersaleCreate($params);
+    }
+
     /**
      * 确认
      * @author  Devil

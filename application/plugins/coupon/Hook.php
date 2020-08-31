@@ -220,7 +220,7 @@ class Hook extends Controller
                     // 扩展展示数据
                     $title = ($ret['coupon_choice']['coupon']['type'] == 0) ? '优惠劵' : '折扣劵';
                     $params['data']['extension_data'][] = [
-                        'name'      => $title.'-'.$ret['coupon_choice']['coupon']['desc'],
+                        'name'      => $title.'-'.$ret['coupon_choice']['coupon']['name'],
                         'price'     => $discount_price,
                         'type'      => 0,
                         'tips'      => '-'.config('shopxo.price_symbol').$discount_price,

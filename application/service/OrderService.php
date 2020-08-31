@@ -23,6 +23,8 @@ use app\service\ResourcesService;
 use app\service\PayLogService;
 use app\service\UserService;
 use app\service\UserLevelService;
+use app\service\OrderAftersaleService;
+use app\service\RefundLogService;
 
 /**
  * 订单服务层
@@ -110,7 +112,7 @@ class OrderService
             ]);
             if($pay_result['code'] == 0)
             {
-                return DataReturn('支付成功', 0, ['data'=>MyUrl('index/order/respond', ['appoint_status'=>0])]);
+                return DataReturn('支付成功', 0, ['is_online_pay' => 0, 'data'=>MyUrl('index/order/respond', ['appoint_status'=>0])]);
             }
             return $pay_result;
         }
@@ -219,7 +221,7 @@ class OrderService
 
                 // 支付模块处理数据
                 'data'          => $ret['data'],
-                'notice_ids'    => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY',
+                'notice_ids'    => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec',
             ];
 
             return $ret;
@@ -697,6 +699,12 @@ class OrderService
         return (int) Db::name('Order')->where($where)->count();
     }
 
+    public static function OrderDetails($params = []){
+        $order_id = $params['order_id'];
+        $items = Db::name('OrderDetail')->where(['order_id'=>$order_id])->select();
+        return DataReturn('', 0, $items);
+    }
+
     /**
      * 订单列表
      * @author   Devil
@@ -871,7 +879,10 @@ class OrderService
                     $v['items_count'] = count($items);
 
                     // 描述
-                    $v['describe'] = 'total:'.$v['buy_number_count'].' amount:'.config('shopxo.price_symbol').$v['total_price'];
+                    $v['describe'] = 'total:'.$v['buy_number_count'].' pcs amount:'.config('shopxo.price_symbol').$v['total_price'];
+                    if($v['returned_quantity'] > 0){
+                        $v['describe'] = $v['describe'] . ' refund: ' . $v['returned_quantity'] . ' pcs';
+                    }
                 }
 
                 // 订单处理后钩子
@@ -1065,17 +1076,29 @@ class OrderService
 
         // 获取订单信息
         $where = ['id'=>intval($params['id']), 'user_id'=>$params['user_id'], 'is_delete_time'=>0, 'user_is_delete_time'=>0];
-        $order = Db::name('Order')->where($where)->field('id,status,user_id')->find();
+        $order = Db::name('Order')->where($where)->find();
         if(empty($order))
         {
             return DataReturn('资源不存在或已被删除', -1);
         }
-        if(!in_array($order['status'], [0,1]))
+        if(!in_array($order['status'], [0,1,2,3,4]))
         {
             $status_text = lang('common_order_user_status')[$order['status']]['name'];
             return DataReturn('状态不可操作['.$status_text.']', -1);
         }
-
+        $force = false;
+        $pay_log = [];
+        if(in_array($order['status'], [2,3,4]))
+        {
+            // 管理员验证
+            $force = true;
+            $pay_log = Db::name('PayLog')->where(['order_id'=>$order['id'], 'business_type'=>1])->find();
+            $ret = self::_check_refund_type($pay_log, $params);
+            if($ret['code'] != 0){
+                return $ret;
+            }
+            $params['refundment'] = $ret['data'];
+        }
         // 开启事务
         Db::startTrans();
         $upd_data = [
@@ -1083,8 +1106,18 @@ class OrderService
             'cancel_time'   => time(),
             'upd_time'      => time(),
         ];
+        $refund_price = 0;
+        if($force){
+            //取消然后退款，发通知
+            $refund_price = PriceNumberFormat($order['pay_price'] - $order['refund_price']);
+            $upd_data['refund_price'] = $order['pay_price'];
+            $upd_data['returned_quantity'] = $order['buy_number_count'];
+        }
+        $notice_msg = '订单取消';
         if(Db::name('Order')->where($where)->update($upd_data))
         {
+            Log::write('cancel_order: upd_data=' . json_encode($upd_data, true));
+
             // 库存回滚
             $ret = BuyService::OrderInventoryRollback(['order_id'=>$order['id'], 'order_data'=>$upd_data]);
             if($ret['code'] != 0)
@@ -1092,6 +1125,23 @@ class OrderService
                 // 事务回滚
                 Db::rollback();
                 return DataReturn($ret['msg'], -10);
+            }
+
+            if($force && $refund_price > 0){
+                //退款
+                Log::write('cancel_order: refund_price=' . $refund_price);
+                $refund = self::_refund($params, $refund_price, $order, $pay_log);
+                if(isset($refund['code']) && $refund['code'] != 0){
+                    Log::write('refund fail: order_id=' . $order['id'] . ' msg=' . $refund['msg']);
+                    Db::rollback();
+                    return $refund;
+                }
+                if($params['refundment'] == 0){
+                    $notice_msg = '订单取消, 订单金额已原路退回，到账时间可能有延迟，请注意查收';
+                }
+                else{
+                    $notice_msg = '订单取消, 订单金额发起退款成功，请注意查收';
+                }
             }
 
             // 用户消息
@@ -1104,6 +1154,14 @@ class OrderService
 
             // 提交事务
             Db::commit();
+
+            //send notice
+            try{
+                return self::SendOrderStatusNotice($order, $notice_msg);
+            }catch(Exception $e){
+                Log::write('SendOrderStatusNotice error:' . $e->getMessage());
+                return DataReturn('发送通知失败：' . $e->getMessage(), -1);
+            }
             return DataReturn('取消成功', 0);
         }
 
@@ -1144,7 +1202,7 @@ class OrderService
 
         // 获取订单信息
         $where = ['id'=>intval($params['id']), 'user_id'=>$params['user_id'], 'is_delete_time'=>0, 'user_is_delete_time'=>0];
-        $order = Db::name('Order')->where($where)->field('id,status,user_id,order_model,order_no')->find();
+        $order = Db::name('Order')->where($where)->find();
         if(empty($order))
         {
             return DataReturn('资源不存在或已被删除', -1);
@@ -1182,30 +1240,39 @@ class OrderService
 
             // 自提模式 - 验证取货码
             case 2 :
-                $p = [
-                    [
-                        'checked_type'      => 'empty',
-                        'key_name'          => 'extraction_code',
-                        'error_msg'         => '取货码有误',
-                    ],
-                ];
-                $ret = ParamsChecked($params, $p);
-                if($ret !== true)
-                {
-                    return DataReturn($ret, -1);
-                }
-
                 // 校验
                 $extraction_code = Db::name('OrderExtractionCode')->where(['order_id'=>$order['id']])->value('code');
                 if(empty($extraction_code))
                 {
                     return DataReturn('订单取货码不存在、请联系管理员', -10);
                 }
-                if($extraction_code != $params['extraction_code'])
-                {
-                    return DataReturn('取货码不正确', -11);
-                }
+                $params['extraction_code'] = $extraction_code;
                 break;
+        }
+
+        // 缺货处理（创建售后订单 + 退款）
+        $params['order'] = $order;
+        $notice_msg = '';
+        $ret = self::RefundWhenGoodsNotThere($params);
+        if($ret['code'] == 100)
+        {
+            //订单关闭
+            $notice_msg = '订单关闭,订单金额已原路退回，到账时间可能有延迟，请注意查收';
+            try{
+                return self::SendOrderStatusNotice($order, $notice_msg);
+            }catch(Exception $e){
+                Log::write('SendOrderStatusNotice error:' . $e->getMessage());
+            }
+            return DataReturn('订单关闭', 0);
+        }
+        if($ret['code'] == 101)
+        {
+            //订单关闭
+            $notice_msg = '部分商品缺货，金额已退回，到账时间可能有延迟';
+        }
+        elseif($ret['code'] != 0)
+        {
+            return DataReturn($ret['msg'], -10);
         }
 
         // 开启事务
@@ -1250,9 +1317,10 @@ class OrderService
 
             // 提交事务
             Db::commit();
+            // 生成和推送取货单
             if($extraction_code != "00"){
                 try{
-                    self::SendPickupNotice($order, $extraction_code);
+                    self::SendPickupNotice($order, $extraction_code, $notice_msg);
                 }catch(Exception $e){
                     Log::write('SendSubscribeMessage error:' . $e->getMessage());
                 }
@@ -1268,6 +1336,267 @@ class OrderService
         return DataReturn('发货失败', -1);
     }
 
+    public static function AdminRefund($params = []){
+        // 获取订单信息
+        $where = ['id'=>intval($params['id']), 'user_id'=>$params['user_id'], 'is_delete_time'=>0, 'user_is_delete_time'=>0];
+        $order = Db::name('Order')->where($where)->find();
+        if(empty($order))
+        {
+            return DataReturn('资源不存在或已被删除', -1);
+        }
+        if(in_array($order['status'], [0,1]))
+        {
+            $status_text = lang('common_order_user_status')[$order['status']]['name'];
+            return DataReturn('状态不可操作['.$status_text.']', -1);
+        }
+        $params['order'] = $order;
+        $ret = self::RefundWhenGoodsNotThere($params);
+        $notice_msg = '';
+        if($ret['code'] == 100)
+        {
+            //订单关闭
+            $notice_msg = '订单关闭,订单金额已原路退回，到账时间可能有延迟，请注意查收';
+            $ret['code'] = 0;
+        }
+        if($ret['code'] == 101)
+        {
+            //订单关闭
+            $notice_msg = '退货成功，金额已退回，到账时间可能有延迟，请注意查收';
+            $ret['code'] = 0;
+        }
+        if(!empty($notice_msg)){
+            try{
+                return self::SendOrderStatusNotice($order, $notice_msg);
+            }catch(Exception $e){
+                Log::write('SendOrderStatusNotice error:' . $e->getMessage());
+            }
+        }
+        
+        return $ret;
+    }
+
+    public static function _check_refund_type($pay_log, $params){
+        $refundment = isset($params['refund_id']) ? $params['refund_id'] : 0;
+        if(empty($pay_log) || in_array($pay_log['payment'], config('shopxo.under_line_list')))
+        {
+            $refundment = 2;
+        }
+        // 原路退回检查
+        if($refundment == 0)
+        {
+            $payment = 'payment\\'.$pay_log['payment'];
+            if(class_exists($payment))
+            {
+                if(!method_exists((new $payment()), 'Refund'))
+                {
+                    return DataReturn('支付插件没退款功能[ '.$pay_log['payment'].' ]', -1);
+                }
+            } else {
+                return DataReturn('支付插件不存在[ '.$pay_log['payment'].' ]', -1);
+            }
+        }
+        // 原路退回(钱包支付方式使用退至钱包)/退到钱包(走事务处理)/手动处理
+        // 钱包校验
+        if($refundment == 1)
+        {
+            $wallet = Db::name('Plugins')->where(['plugins'=>'wallet'])->find();
+            if(empty($wallet))
+            {
+                return DataReturn('请先安装钱包插件[ Wallet ]', -1);
+            }
+        }
+        return DataReturn('', 0, $refundment);
+    }
+
+    public static function _refund($params, $refund_price, $order, $pay_log){
+        $aftersale = ['price' => $refund_price];
+        $refundment = $params['refundment'];
+        if($refundment == 1)
+        {
+            $refund = self::WalletRefundment($params, $aftersale, $order['data'], $pay_log);
+        }else{
+            if($refundment == 0){
+                // 原路退回
+                $refund = OrderAftersaleService::OriginalRoadRefundment($params, $aftersale, $order, $pay_log);
+            }else {
+                // 手动处理不涉及金额
+                // 写入退款日志
+                $refund_log = [
+                    'user_id'       => $order['user_id'],
+                    'order_id'      => $order['id'],
+                    'pay_price'     => $order['pay_price'],
+                    'trade_no'      => '',
+                    'buyer_user'    => '',
+                    'refund_price'  => $refund_price,
+                    'msg'           => '后台退款 ' . $params['creator_name'] . '-' . $params['creator'],
+                    'payment'       => $pay_log['payment'],
+                    'payment_name'  => $pay_log['payment_name'],
+                    'refundment'    => $refundment,
+                    'business_type' => 1,
+                    'return_params' => '',
+                ];
+                RefundLogService::RefundLogInsert($refund_log);
+                $refund = DataReturn('退款成功', 0);
+            }
+        }
+        return $refund;
+    }
+
+    public static function RefundWhenGoodsNotThere($params = [])
+    {
+        $order = $params['order'];
+        $params['deliver_numbers'] = str_replace('&quot;', '"', $params['deliver_numbers']);
+        Log::write('deliver_numbers=' . $params['deliver_numbers']);
+        $refund_numbers = isset($params['deliver_numbers']) ? json_decode($params['deliver_numbers'], true) : [];
+        Log::write('refund_numbers=' . json_encode($refund_numbers));
+
+        // 订单支付方式校验
+        $refund = true;
+        $pay_log = Db::name('PayLog')->where(['order_id'=>$order['id'], 'business_type'=>1])->find();
+        $ret = self::_check_refund_type($pay_log, $params);
+        if($ret['code'] != 0){
+            return $ret;
+        }
+        $params['refundment'] = $ret['data'];
+
+        if($order['out_of_stock'] == 0 && !empty($refund_numbers)){
+            //整单取消
+            Log::write('RefundWhenGoodsNotThere out_of_stock=' . $order['out_of_stock'] . 'refund_numbers=' . json_encode($refund_numbers));
+            return DataReturn('用户设置为 当缺货时取消订单.', -1);
+        }
+
+        $items = Db::name('OrderDetail')->where(['order_id'=>$order['id']])->select();
+        $max_price = PriceNumberFormat($order['pay_price'] - $order['refund_price']); 
+        Log::write('id=' . $order['id'] . ' max_price=' . $max_price);
+        $returned_quantity = 0;
+        $refund_price = 0;
+        $fail = false;
+        foreach($items as $detail)
+        {
+            $return_number = isset($refund_numbers[$detail['id']]) ?  $refund_numbers[$detail['id']] : 0;
+            Log::write('detail=' . $detail['id'] . ' return_number=' . $return_number);
+            if($return_number + $detail['returned_quantity'] > $detail['buy_number'] || $return_number <= 0){
+                continue;
+            }
+            if(PriceNumberFormat($refund_price + $detail['discount_price'] * $return_number) > $max_price){
+                $fail = true;
+                Log::write('创建退货单失败: 超过可退款金额 detail=' . $detail['id']);
+                continue;
+            }
+            //创建售后单
+            Db::startTrans();
+            $aftersale = [
+                'order_no'          => $order['order_no'],
+                'type'              => 0, //仅退款
+                'order_detail_id'   => intval($detail['id']),
+                'order_id'          => intval($order['id']),
+                'goods_id'          => $detail['goods_id'],
+                'user_id'           => $detail['user_id'],
+                'number'            => $return_number,
+                'price'             => PriceNumberFormat($detail['discount_price'] * $return_number),
+                'reason'            => '',
+                'msg'               => '',
+                'images'            => '',
+                'refundment'        => $params['refundment'],
+                'status'            => 3,
+                'add_time'          => time(),
+                'upd_time'          => time(),
+                'audit_time'        => time(),
+                'apply_time'        => time(),
+            ];
+            
+            if(Db::name('OrderAftersale')->insertGetId($aftersale) <= 0)
+            {
+                $fail = true;
+                Log::write('创建退货单失败: order_id=' . $order['id']);
+                break;
+            }
+            //退款
+            // 原路退回(钱包支付方式使用退至钱包)/退到钱包(走事务处理)/手动处理
+            // 退款成功-提交成功
+            $refund = self::_refund($params, $aftersale['price'], $order, $pay_log);
+            if(isset($refund['code']) && $refund['code'] != 0){
+                $fail = true;
+                Log::write('发起退款失败: order_id=' . $order['id']);
+                Db::rollback();
+                break;
+            }
+
+            // 订单详情
+            $detail_upd_data = [
+                'refund_price'      => PriceNumberFormat($detail['refund_price'] + $aftersale['price']),
+                'returned_quantity' => intval($detail['returned_quantity'] + $return_number),
+                'upd_time'          => time(),
+            ];
+            if($order['status'] == 2){
+                $detail_upd_data['deliver_number'] = $detail['buy_number'] - $return_number;
+            }
+            if(!Db::name('OrderDetail')->where(['id'=>$detail['id']])->update($detail_upd_data))
+            {
+                $fail = true;
+                Log::write('订单详情更新失败: order_id=' . $order['id']);
+                break;
+            }
+            $returned_quantity = $returned_quantity + $return_number;
+            $refund_price = $refund_price + $aftersale['price'];
+
+            // 提交事务
+            Db::commit();
+        }
+        if($returned_quantity == 0 && !$fail){
+            Log::write('RefundWhenGoodsNotThere returned_quantity=' . $returned_quantity . 'partial fail=false');
+            return DataReturn('无需处理', 0);
+        }
+        if($returned_quantity == 0 && $fail){
+            return DataReturn('退款失败', -1);
+        }
+
+        // 更新主订单
+        $refund_price = PriceNumberFormat($order['refund_price'] + $refund_price);
+        $returned_quantity = intval($order['returned_quantity'] + $returned_quantity);
+        $order_upd_data = [
+            'pay_status'        => ($refund_price >= $order['pay_price']) ? 2 : 3,
+            'refund_price'      => $refund_price,
+            'returned_quantity' => $returned_quantity,
+            'upd_time'          => time(),
+        ];
+
+        // 如果退款金额和退款数量到达订单实际是否金额和购买数量则关闭订单
+        if($returned_quantity >= $order['buy_number_count'])
+        {
+            $order_upd_data['close_time'] = time();
+            $order_upd_data['status'] = 6;
+        }
+        
+        // 更新主订单
+        if(!Db::name('Order')->where(['id'=>$order['id']])->update($order_upd_data))
+        {
+            return DataReturn('主订单更新失败', -1);
+        }
+
+        // 消息通知
+        $detail = '订单退款成功，金额'.PriceBeautify($refund_price).'元';
+        MessageService::MessageAdd('admin', '订单退款', $detail, 1, $order['id']);
+
+        // 订单状态日志
+        if(isset($order_upd_data['status']))
+        {
+            $creator = isset($params['creator']) ? intval($params['creator']) : 0;
+            $creator_name = isset($params['creator_name']) ? htmlentities($params['creator_name']) : '';
+            self::OrderHistoryAdd($order['id'], $order_upd_data['status'], $order['status'], '关闭', $creator, $creator_name);
+        }   
+        if($fail){
+            return DataReturn('部分退款失败。请稍后重试', -1);
+        }else{
+            if(isset($order_upd_data['status']) && $order_upd_data['status'] == 6){
+                return DataReturn('订单关闭', 100);
+            }
+            else{
+                return DataReturn('退款成功', 101);
+            }
+        }
+    }
+
     public static function SendNotice($params = []){
         // 获取订单信息
         $where = ['id'=>intval($params['id']), 'is_delete_time'=>0, 'user_is_delete_time'=>0];
@@ -1278,14 +1607,14 @@ class OrderService
             return DataReturn('订单取货码不存在、请联系管理员', -10);
         }
         try{
-            return self::SendPickupNotice($order, $extraction_code);
+            return self::SendPickupNotice($order, $extraction_code, '');
         }catch(Exception $e){
-            Log::write('SendSubscribeMessage error:' . $e->getMessage());
+            Log::write('SendPickupNotice error:' . $e->getMessage());
             return DataReturn('发送通知失败：' . $e->getMessage(), -1);
         }
     }
 
-    public static function SendPickupNotice($order = [], $extraction_code){
+    public static function SendPickupNotice($order = [], $extraction_code='', $notes=''){
         $result = [];
         if($order['order_model'] == 2){
             // 发送订阅消息通知
@@ -1297,6 +1626,9 @@ class OrderService
             $weixin_openid = $user['weixin_openid'];
             if(empty($weixin_openid)){
                 return DataReturn('用户openid不存在', -111);
+            }
+            if(!empty($notes)){
+                $extraction_code = $extraction_code . '(' . $notes . ')';
             }
             $notice_param = [
                 'touser' => $weixin_openid,
@@ -1323,6 +1655,50 @@ class OrderService
                     'time5' => [
                         'value' => date("Y-m-d H:i:s"),
                     ],
+                ]
+            ];
+            $result = (new \base\Wechat(MyC('common_app_mini_weixin_appid'), MyC('common_app_mini_weixin_appsecret')))->SendSubscribeMessage($notice_param);
+            Log::write('SendSubscribeMessage ret:' . json_encode($result));
+        }else{
+            Log::write('SendSubscribeMessage end, order model=' . $order['order_model']);
+            $result = DataReturn('不符合的类型', 0, $res);
+        }
+        return $result;
+    }
+
+    public static function SendOrderStatusNotice($order = [], $notes=''){
+        $result = [];
+        if($order['order_model'] == 2){
+            // 发送订阅消息通知
+            $user = UserService::UserInfo('id', $order['user_id'], 'weixin_openid');
+            if(empty($user)){
+                return DataReturn('用户不存在或已删除', -110);
+            }
+            $weixin_openid = $user['weixin_openid'];
+            if(empty($weixin_openid)){
+                return DataReturn('用户openid不存在', -111);
+            }
+            $notice_param = [
+                'touser' => $weixin_openid,
+                'template_id' => 'UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec',
+                'page' => '/pages/user-order-detail/user-order-detail?id=' . $order['id'],
+                'data' => [
+                    // 订单号
+                    'character_string1' => [
+                        'value' => $order['order_no'],
+                    ],
+                    // 订单状态
+                    'phrase2' => [
+                        'value' => 'cancel',
+                    ],
+                    // 通知时间
+                    'time3' => [
+                        'value' => date("Y-m-d H:i:s"),
+                    ],
+                    // 备注
+                    'thing4' => [
+                        'value' => $notes,
+                    ]
                 ]
             ];
             $result = (new \base\Wechat(MyC('common_app_mini_weixin_appid'), MyC('common_app_mini_weixin_appsecret')))->SendSubscribeMessage($notice_param);
@@ -1366,7 +1742,7 @@ class OrderService
 
         // 获取订单信息
         $where = ['id'=>intval($params['id']), 'user_id'=>$params['user_id'], 'is_delete_time'=>0, 'user_is_delete_time'=>0];
-        $order = Db::name('Order')->where($where)->field('id,status,user_id')->find();
+        $order = Db::name('Order')->where($where)->field('id,status,user_id,order_model')->find();
         if(empty($order))
         {
             return DataReturn('资源不存在或已被删除', -1);
@@ -1375,6 +1751,19 @@ class OrderService
         {
             $status_text = lang('common_order_user_status')[$order['status']]['name'];
             return DataReturn('状态不可操作['.$status_text.']', -1);
+        }
+        // 订单模式
+        if($order['order_model'] == 2)
+        {
+            $extraction_code = Db::name('OrderExtractionCode')->where(['order_id'=>$order['id']])->value('code');
+            if(empty($extraction_code))
+            {
+                return DataReturn('订单取货码不存在、请联系管理员', -10);
+            }
+            if($extraction_code != $params['extraction_code'])
+            {
+                return DataReturn('取货码不正确', -11);
+            }
         }
 
         // 开启事务

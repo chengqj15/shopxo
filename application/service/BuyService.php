@@ -12,6 +12,8 @@ namespace app\service;
 
 use think\Db;
 use think\facade\Hook;
+use think\facade\Log;
+
 use app\service\GoodsService;
 use app\service\UserService;
 use app\service\ResourcesService;
@@ -214,6 +216,8 @@ class BuyService
                 {
                     $v['inventory'] = $goods_base['data']['spec_base']['inventory'];
                     $v['price'] = (float) $goods_base['data']['spec_base']['price'];
+                    $v['discount_price'] = $v['price'];
+                    $v['total_price'] = $v['price'] * $v['stock'];
                     $v['original_price'] = (float) $goods_base['data']['spec_base']['original_price'];
                     $v['spec_weight'] = $goods_base['data']['spec_base']['weight'];
                     $v['spec_coding'] = $goods_base['data']['spec_base']['coding'];
@@ -594,6 +598,7 @@ class BuyService
         {
             $ret['data'][0]['inventory'] = $goods_base['data']['spec_base']['inventory'];
             $ret['data'][0]['price'] = (float) $goods_base['data']['spec_base']['price'];
+            $ret['data'][0]['discount_price'] = $ret['data'][0]['price'];
             $ret['data'][0]['original_price'] = (float) $goods_base['data']['spec_base']['original_price'];
             $ret['data'][0]['spec_weight'] = $goods_base['data']['spec_base']['weight'];
             $ret['data'][0]['spec_coding'] = $goods_base['data']['spec_base']['coding'];
@@ -617,6 +622,7 @@ class BuyService
         // 数量/小计
         $ret['data'][0]['stock'] = $params['stock'];
         $ret['data'][0]['total_price'] = $params['stock']* ((float) $ret['data'][0]['price']);
+        $ret['data'][0]['discount_total_price'] = $ret['data'][0]['total_price'];
 
         return DataReturn('操作成功', 0, $ret['data']);
     }
@@ -870,7 +876,7 @@ class BuyService
 
                 'service_fee_free'      => $service_fee_free,
 
-                'membership_discount'   => 1.00,
+                'membership_discount'   => 0.00,
 
                 // 优惠金额
                 'preferential_price'    => 0.00,
@@ -907,14 +913,6 @@ class BuyService
             // business 业务类型（内容格式不限）
             // ext 扩展数据（内容格式不限）
             $extension_data = [
-                // [
-                //     'name'       => '感恩节9折',
-                //     'price'      => 23,
-                //     'type'       => 0,
-                //     'tips'       => '-￥23元',
-                //     'business'   => null,
-                //     'ext'        => null,
-                // ],
             ];
 
             // 返回数据
@@ -944,6 +942,25 @@ class BuyService
             $result['base']['actual_price'] = PriceNumberFormat($actual_price);
             $result['base']['preferential_price'] = PriceNumberFormat($result['base']['preferential_price']);
             $result['base']['increase_price'] = PriceNumberFormat($result['base']['increase_price']);
+
+            //更新产品的实际价格
+            if(isset($params['buy_type']) && in_array($params['buy_type'], ['cart', 'goods']) && $result['base']['preferential_price'] > 0)
+            {
+                $rate = ($result['base']['total_price'] - $result['base']['preferential_price']) / $result['base']['total_price'];
+                if($rate > 0){
+                    $total = 0;
+                    foreach($result['goods'] as &$good){
+                        $good['discount_price'] = PriceNumberFormat($good['price'] * $rate);
+                        $good['discount_total_price'] = PriceNumberFormat($good['discount_price'] * $good['stock']);
+                        $total += $good['discount_total_price'];
+                    }
+                    // adjust
+                    $adjust = PriceNumberFormat($result['base']['total_price'] - $result['base']['preferential_price'] - $total);
+                    if($adjust != 0){
+                        $result['goods'][0]['discount_total_price'] = PriceNumberFormat($result['goods'][0]['discount_total_price'] + $adjust);
+                    }
+                }
+            }
 
             return DataReturn('操作成功', 0, $result);
         }
@@ -1171,6 +1188,7 @@ class BuyService
             'buy_number_count'      => array_sum(array_column($buy['data']['goods'], 'stock')),
             'client_type'           => (APPLICATION_CLIENT_TYPE == 'pc' && IsMobile()) ? 'h5' : APPLICATION_CLIENT_TYPE,
             'order_model'           => $site_model,
+            'out_of_stock'          => $params['out_of_stock'] || 0,
             'add_time'              => time(),
         ];
         if($order['status'] == 1)
@@ -1369,12 +1387,15 @@ class BuyService
             'images'            => $detail['images_old'],
             'original_price'    => $detail['original_price'],
             'price'             => $detail['price'],
-            'total_price'       => PriceNumberFormat($detail['stock']*$detail['price']),
+            'discount_price'    => $detail['discount_price'],
+            'discount_total_price'    => isset($detail['discount_total_price']) ? $detail['discount_total_price'] : $detail['total_price'],
+            'total_price'       => $detail['total_price'],
             'spec'              => empty($detail['spec']) ? '' : json_encode($detail['spec']),
             'spec_weight'       => empty($detail['spec_weight']) ? 0.00 : (float) $detail['spec_weight'],
             'spec_coding'       => empty($detail['spec_coding']) ? '' : $detail['spec_coding'],
             'spec_barcode'      => empty($detail['spec_barcode']) ? '' : $detail['spec_barcode'],
             'buy_number'        => intval($detail['stock']),
+            'deliver_number'    => intval($detail['stock']),
             'model'             => $detail['model'],
             'add_time'          => time(),
         ];
@@ -1841,12 +1862,13 @@ class BuyService
         }
 
         // 获取订单商品
-        $order_detail = Db::name('OrderDetail')->field('id,goods_id,buy_number,spec')->where(['order_id'=>$params['order_id']])->select();
+        $order_detail = Db::name('OrderDetail')->field('id,goods_id,deliver_number,spec')->where(['order_id'=>$params['order_id']])->select();
         if(!empty($order_detail))
         {
             foreach($order_detail as $v)
             {
                 // 查看是否已扣除过库存,避免更改模式导致重复扣除
+                $v['buy_number'] = $v['deliver_number'];
                 $temp = Db::name('OrderGoodsInventoryLog')->where(['order_id'=>$params['order_id'], 'order_detail_id'=>$v['id'], 'goods_id'=>$v['goods_id']])->find();
                 if(empty($temp))
                 {

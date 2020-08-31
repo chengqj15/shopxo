@@ -184,6 +184,21 @@ class Order extends Common
         return OrderService::OrderDelivery($params);
     }
 
+    public function Adminrefund()
+    {
+        // 是否ajax请求
+        if(!IS_AJAX)
+        {
+            return $this->error('非法访问');
+        }
+
+        // 发货操作
+        $params = input();
+        $params['creator'] = $this->admin['id'];
+        $params['creator_name'] = $this->admin['username'];
+        return OrderService::AdminRefund($params);
+    }
+
     /**
      * [Collect 订单收货]
      * @author   Devil
@@ -263,6 +278,14 @@ class Order extends Common
         }
         $params = input();
         return OrderService::SendNotice($params);
+    }
+
+    public function Detail()
+    {
+        $params = input();
+        $params['creator'] = $this->admin['id'];
+        $params['creator_name'] = $this->admin['username'];
+        return OrderService::OrderDetails($params);
     }
 }
 ?>

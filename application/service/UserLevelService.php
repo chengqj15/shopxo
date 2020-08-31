@@ -396,7 +396,7 @@ class UserLevelService
         }
 
         // 订单
-        $order = Db::name('Order')->field('id,user_id,status')->find(intval($params['order_id']));
+        $order = Db::name('Order')->field('id,user_id,status,price,preferential_price')->find(intval($params['order_id']));
         if(empty($order))
         {
             return DataReturn('订单不存在或已删除，中止操作', 0);

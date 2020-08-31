@@ -73,7 +73,7 @@ class Buy extends Common
                 'common_order_is_booking'   => (int) MyC('common_order_is_booking', 0),
                 'common_site_type'          => (int) MyC('common_site_type', 0, true),
             ];
-            $site_model = isset($params['site_model']) ? $params['site_model'] : ($result['common_site_type'] == 2 ? 2 : 0);
+            $site_model = $result['common_site_type'] == 2 ? 2 : (isset($params['site_model']) ? $params['site_model'] : 0);
             $result['site_model'] = $site_model;
 
             // 优惠劵
