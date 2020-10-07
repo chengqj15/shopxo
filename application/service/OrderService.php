@@ -778,7 +778,7 @@ class OrderService
                 $v['client_type_name'] = isset($common_platform_type[$v['client_type']]) ? $common_platform_type[$v['client_type']]['name'] : '';
 
                 // 状态
-                $v['status_name'] = ($v['order_model'] == 2 && $v['status'] == 2) ? '待取货' : $order_status_list[$v['status']]['name'];
+                $v['status_name'] = ($v['order_model'] == 2 && $v['status'] == 2) ? 'Paid' : $order_status_list[$v['status']]['name'];
 
                 // 支付状态
                 $v['pay_status_name'] = $order_pay_status[$v['pay_status']]['name'];
@@ -1137,10 +1137,10 @@ class OrderService
                     return $refund;
                 }
                 if($params['refundment'] == 0){
-                    $notice_msg = '订单取消, 订单金额已原路退回，到账时间可能有延迟，请注意查收';
+                    $notice_msg = '已退款，到账时间可能延迟，请注意查收';
                 }
                 else{
-                    $notice_msg = '订单取消, 订单金额发起退款成功，请注意查收';
+                    $notice_msg = '订单取消, 发起退款成功，请注意查收';
                 }
             }
 
@@ -1157,10 +1157,10 @@ class OrderService
 
             //send notice
             try{
-                return self::SendOrderStatusNotice($order, $notice_msg);
+                $order['status'] = 5;
+                self::SendOrderStatusNotice($order, $notice_msg);
             }catch(Exception $e){
                 Log::write('SendOrderStatusNotice error:' . $e->getMessage());
-                return DataReturn('发送通知失败：' . $e->getMessage(), -1);
             }
             return DataReturn('取消成功', 0);
         }
@@ -1257,9 +1257,10 @@ class OrderService
         if($ret['code'] == 100)
         {
             //订单关闭
-            $notice_msg = '订单关闭,订单金额已原路退回，到账时间可能有延迟，请注意查收';
+            $notice_msg = '已退款，到账时间可能延迟，请注意查收';
             try{
-                return self::SendOrderStatusNotice($order, $notice_msg);
+                $order['status'] = 5;
+                self::SendOrderStatusNotice($order, $notice_msg);
             }catch(Exception $e){
                 Log::write('SendOrderStatusNotice error:' . $e->getMessage());
             }
@@ -1268,7 +1269,7 @@ class OrderService
         if($ret['code'] == 101)
         {
             //订单关闭
-            $notice_msg = '部分商品缺货，金额已退回，到账时间可能有延迟';
+            $notice_msg = 'partial refund';
         }
         elseif($ret['code'] != 0)
         {
@@ -1355,18 +1356,19 @@ class OrderService
         if($ret['code'] == 100)
         {
             //订单关闭
-            $notice_msg = '订单关闭,订单金额已原路退回，到账时间可能有延迟，请注意查收';
+            $order['status'] = 5;
+            $notice_msg = '已退款，到账时间可能延迟，请注意查收';
             $ret['code'] = 0;
         }
         if($ret['code'] == 101)
         {
             //订单关闭
-            $notice_msg = '退货成功，金额已退回，到账时间可能有延迟，请注意查收';
+            $notice_msg = '已退款，到账时间可能延迟，请注意查收';
             $ret['code'] = 0;
         }
         if(!empty($notice_msg)){
             try{
-                return self::SendOrderStatusNotice($order, $notice_msg);
+                self::SendOrderStatusNotice($order, $notice_msg);
             }catch(Exception $e){
                 Log::write('SendOrderStatusNotice error:' . $e->getMessage());
             }
@@ -1565,7 +1567,7 @@ class OrderService
         if($returned_quantity >= $order['buy_number_count'])
         {
             $order_upd_data['close_time'] = time();
-            $order_upd_data['status'] = 6;
+            $order_upd_data['status'] = 5;
         }
         
         // 更新主订单
@@ -1621,14 +1623,16 @@ class OrderService
             $address_data = self::OrderAddressData($order['id']);
             $user = UserService::UserInfo('id', $order['user_id'], 'weixin_openid');
             if(empty($user)){
+                Log::write('SendSubscribeMessage err: 用户不存在或已删除');
                 return DataReturn('用户不存在或已删除', -110);
             }
             $weixin_openid = $user['weixin_openid'];
             if(empty($weixin_openid)){
+                Log::write('SendSubscribeMessage err: 用户openid不存在');
                 return DataReturn('用户openid不存在', -111);
             }
             if(!empty($notes)){
-                $extraction_code = $extraction_code . '(' . $notes . ')';
+                $extraction_code = $extraction_code . ' --' . $notes;
             }
             $notice_param = [
                 'touser' => $weixin_openid,
@@ -1668,45 +1672,64 @@ class OrderService
 
     public static function SendOrderStatusNotice($order = [], $notes=''){
         $result = [];
-        if($order['order_model'] == 2){
-            // 发送订阅消息通知
-            $user = UserService::UserInfo('id', $order['user_id'], 'weixin_openid');
-            if(empty($user)){
-                return DataReturn('用户不存在或已删除', -110);
-            }
-            $weixin_openid = $user['weixin_openid'];
-            if(empty($weixin_openid)){
-                return DataReturn('用户openid不存在', -111);
-            }
-            $notice_param = [
-                'touser' => $weixin_openid,
-                'template_id' => 'UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec',
-                'page' => '/pages/user-order-detail/user-order-detail?id=' . $order['id'],
-                'data' => [
-                    // 订单号
-                    'character_string1' => [
-                        'value' => $order['order_no'],
-                    ],
-                    // 订单状态
-                    'phrase2' => [
-                        'value' => 'cancel',
-                    ],
-                    // 通知时间
-                    'time3' => [
-                        'value' => date("Y-m-d H:i:s"),
-                    ],
-                    // 备注
-                    'thing4' => [
-                        'value' => $notes,
-                    ]
-                ]
-            ];
-            $result = (new \base\Wechat(MyC('common_app_mini_weixin_appid'), MyC('common_app_mini_weixin_appsecret')))->SendSubscribeMessage($notice_param);
-            Log::write('SendSubscribeMessage ret:' . json_encode($result));
-        }else{
-            Log::write('SendSubscribeMessage end, order model=' . $order['order_model']);
-            $result = DataReturn('不符合的类型', 0, $res);
+        // 发送订阅消息通知
+        $user = UserService::UserInfo('id', $order['user_id'], 'weixin_openid');
+        if(empty($user)){
+            Log::write('SendOrderStatusNotice err: 用户不存在或已删除');
+            return DataReturn('用户不存在或已删除', -110);
         }
+        $weixin_openid = $user['weixin_openid'];
+        if(empty($weixin_openid)){
+            Log::write('SendOrderStatusNotice err: 用户openid不存在');
+            return DataReturn('用户openid不存在', -111);
+        }
+        $status = '';
+        Log::write('SendOrderStatusNotice info: status=' . $order['status']);
+        switch ($order['status']) {
+            case 2:
+                $status = '已支付';
+                break;
+            case 3:
+                $status = '已发货';
+                break;
+            case 4:
+                $status = '已完成';
+                break;    
+            case 5:
+                $status = '取消';
+                break;
+            case 6:
+                $status = '关闭';
+                break;
+            default:
+                $status = '处理中';
+                break;
+        }
+        $notice_param = [
+            'touser' => $weixin_openid,
+            'template_id' => 'UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec',
+            'page' => '/pages/user-order-detail/user-order-detail?id=' . $order['id'],
+            'data' => [
+                // 订单号
+                'character_string1' => [
+                    'value' => $order['order_no'],
+                ],
+                // 订单状态
+                'phrase2' => [
+                    'value' => $status,
+                ],
+                // 通知时间
+                'time3' => [
+                    'value' => date("Y-m-d H:i:s"),
+                ],
+                // 备注
+                'thing4' => [
+                    'value' => $notes,
+                ]
+            ]
+        ];
+        $result = (new \base\Wechat(MyC('common_app_mini_weixin_appid'), MyC('common_app_mini_weixin_appsecret')))->SendSubscribeMessage($notice_param);
+        Log::write('SendOrderStatusNotice ret:' . json_encode($result));
         return $result;
     }
 

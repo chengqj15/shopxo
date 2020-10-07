@@ -751,7 +751,8 @@ class CouponService
         $ret = self::CouponSend($coupon_params);
         if($ret['code'] == 0)
         {
-            return DataReturn('领取成功', 0);
+            $data = ['notice_ids' => ''];
+            return DataReturn('领取成功', 0, $data);
         }
         return $ret;
     }

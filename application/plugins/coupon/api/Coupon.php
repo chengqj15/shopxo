@@ -111,7 +111,8 @@ class Coupon extends Common
             return DataReturn('invalid coupon id', -1); 
         }
 
-        $images = MyUrl('index/qrcode/index', ['content'=>urlencode(base64_encode($data['coupon_code']))]);
+        // $images = MyUrl('index/qrcode/barcode', ['content'=>urlencode(base64_encode($data['coupon_code']))]);
+        $images = (new \base\Qrcode())->BarcodeView(['content'=>urlencode(base64_encode($data['coupon_code']))]);
         $data['images'] = $images;
         return DataReturn('success', 0, $data); 
     }

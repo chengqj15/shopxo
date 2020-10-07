@@ -34,6 +34,25 @@ class QrCode extends Common
      * @version  1.0.0
      * @datetime 2019-04-16T21:52:09+0800
      */
+    public function Barcode()
+    {
+        $params = input();
+        if(empty($params['content']))
+        {
+            $this->assign('msg', '内容参数为空');
+            return $this->fetch('public/tips_error');
+        }
+
+        (new \base\Qrcode())->BarcodeView($params);
+    }
+
+    /**
+     * 二维码显示
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  1.0.0
+     * @datetime 2019-04-16T21:52:09+0800
+     */
     public function Index()
     {
         $params = input();

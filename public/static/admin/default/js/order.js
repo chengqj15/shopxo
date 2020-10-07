@@ -49,6 +49,7 @@ $(function()
                                     '<th>count</th>' + 
                                     '<th>discount_price</th>' + 
                                     '<th>barcode</th>' + 
+                                    '<th>已退数</th>' + 
                                     '<th>退货数量</th>' +                         
                                 '</div>' + 
                                 '</tr>' + 
@@ -63,6 +64,7 @@ $(function()
                                 '<td>' + json[i].buy_number + '</td>' +
                                 '<td>' + json[i].discount_price + '</td>' +
                                 '<td>' + json[i].spec_barcode + '</td>' +
+                                '<td>' + json[i].returned_quantity + '</td>' +
                                 '<td><input type="hidden" class="detail_ids" value="' + json[i].id + '">' + 
                                 '<input type="hidden" class="detail_buys" value="' + (json[i].buy_number - json[i].returned_quantity) + '">' + 
                                 '<input type="number" class="detail_nums" placeholder="退货数量(0-' + 

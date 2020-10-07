@@ -601,30 +601,34 @@ class UserService
             ],
             [
                 'checked_type'      => 'empty',
-                'key_name'          => 'province',
-                'error_msg'         => '省不能为空',
-            ],
-            [
-                'checked_type'      => 'empty',
-                'key_name'          => 'city',
-                'error_msg'         => '城市不能为空',
-            ],
-            [
-                'checked_type'      => 'empty',
-                'key_name'          => 'county',
-                'error_msg'         => '区/县不能为空',
-            ],
-            [
-                'checked_type'      => 'empty',
-                'key_name'          => 'address',
-                'error_msg'         => '详细地址不能为空',
-            ],
-            [
-                'checked_type'      => 'empty',
                 'key_name'          => 'user',
                 'error_msg'         => '用户信息有误',
             ],
         ];
+        if(!isset($params['contact']) || $params['contact'] == 0){
+            array_merge($p, [
+                [
+                    'checked_type'      => 'empty',
+                    'key_name'          => 'province',
+                    'error_msg'         => '省不能为空',
+                ],
+                [
+                    'checked_type'      => 'empty',
+                    'key_name'          => 'city',
+                    'error_msg'         => '城市不能为空',
+                ],
+                [
+                    'checked_type'      => 'empty',
+                    'key_name'          => 'county',
+                    'error_msg'         => '区/县不能为空',
+                ],
+                [
+                    'checked_type'      => 'empty',
+                    'key_name'          => 'address',
+                    'error_msg'         => '详细地址不能为空',
+                ],
+            ]);
+        }
         $ret = ParamsChecked($params, $p);
         if($ret !== true)
         {

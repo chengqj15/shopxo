@@ -22,6 +22,8 @@ class Qrcode
     // 配置
     private $config;
 
+    private $generator;
+
     /**
      * 构造方法
      * @author   Devil
@@ -36,6 +38,35 @@ class Qrcode
         // 默认配置
         $this->config['root_path'] = isset($params['root_path']) ? $params['root_path'] : ROOT.'public';
         $this->config['path'] = isset($params['path']) ? $params['path'] : DS.'static'.DS.'upload'.DS.'images'.DS.'qrcode'.DS.date('Y').DS.date('m').DS.date('d').DS;
+
+        require_once ROOT.'extend'.DS. 'vendor'.DS.'autoload.php';
+
+        $this->generator = new \Picqer\Barcode\BarcodeGeneratorPNG(); 
+    }
+
+    /**
+     * 条形码展示
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  1.0.0
+     * @datetime 2019-04-16T21:13:16+0800
+     * @param    [array]                    $params [输入参数]
+     */
+    public function BarcodeView($params = [])
+    {
+        // 内容
+        $content = isset($params['content']) ? base64_decode(urldecode(trim($params['content']))) : __MY_URL__;
+
+        // 生成二维码并输出页面显示
+        if(ob_get_length() > 0)
+        {
+            ob_clean();
+        }
+        $image = $this->generator->getBarcode($content, $this->generator::TYPE_CODE_128);
+        // Header("Content-type: image/png");
+        // ImagePng($image);
+        // ImageDestroy($image);
+        return 'data:image/png;base64,' . base64_encode($image);
     }
 
     /**
