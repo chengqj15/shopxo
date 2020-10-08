@@ -117,10 +117,5 @@ class Coupon extends Common
         return DataReturn('success', 0, $data); 
     }
 
-    public function verify($params = [])
-    {
-        // 优惠劵保存
-        return CouponService::CouponSend($params);
-    }
 }
 ?>

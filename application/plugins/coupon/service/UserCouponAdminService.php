@@ -120,6 +120,10 @@ class UserCouponAdminService
                 $where[] = ['id', '=', 0];
             }
         }
+        if(!empty($params['coupon_code']))
+        {
+            $where[] = ['coupon_code', 'like', $params['coupon_code'] . '%'];
+        }
 
         // 更多条件
         if(isset($params['is_more']) && $params['is_more'] == 1)
@@ -237,6 +241,45 @@ class UserCouponAdminService
         }
 
         return DataReturn('删除失败或资源不存在', -100);
+    }
+
+    /**
+     *  核销
+     */
+    public static function UserCouponVerify($params = []){
+        // 请求参数
+        $p = [
+            [
+                'checked_type'      => 'empty',
+                'key_name'          => 'id',
+                'error_msg'         => '操作id有误',
+            ],
+        ];
+        $ret = ParamsChecked($params, $p);
+        if($ret !== true)
+        {
+            return DataReturn($ret, -1);
+        }
+        $where = ['id'=>intval($params['id'])];
+        $data = Db::name('PluginsCouponUser')->where($where)->find();
+        if(empty($data)){
+            return DataReturn('invalid coupon id', -1); 
+        }
+        if($data['is_use'] == 1){
+            return DataReturn('the coupon already used.', -1); 
+        }
+
+        $data = [
+            'is_use'    => 1,
+            'upd_time'  => time(),
+            'use_time'  => time(),
+            'use_order_id' => 0,
+        ];
+        if(Db::name('PluginsCouponUser')->where($where)->update($data))
+        {
+            return DataReturn('verify success', 0);
+        }
+        return DataReturn('verify fail', -1);
     }
 }
 ?>

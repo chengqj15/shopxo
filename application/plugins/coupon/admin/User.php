@@ -125,5 +125,12 @@ class User extends Controller
         // 开始处理
         return UserCouponAdminService::Delete($params);
     }
+
+    
+    public function verify($params = [])
+    {
+        // 优惠劵保存
+        return UserCouponAdminService::UserCouponVerify($params);
+    }
 }
 ?>

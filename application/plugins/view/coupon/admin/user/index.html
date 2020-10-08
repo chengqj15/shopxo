@@ -10,9 +10,10 @@
 
         <div class="user-content">
             <!-- form start -->
-            <form class="am-form form-validation form-search" method="post" action="{{:PluginsAdminUrl('coupon', 'user', 'index')}}" request-type="form">
+            <form id="search_form"  class="am-form form-validation form-search" method="post" action="{{:PluginsAdminUrl('coupon', 'user', 'index')}}" request-type="form">
                 <div class="thin">
                     <div class="am-input-group am-input-group-sm am-fl so">
+                        <input type="text" autocomplete="off" id="coupon_code_s" name="coupon_code" class="am-radius" placeholder="coupon code" value="{{if !empty($params.coupon_code)}}{{$params.coupon_code}}{{/if}}" />
                         <input type="text" autocomplete="off" name="keywords" class="am-radius" placeholder="用户名/昵称/手机/邮箱" value="{{if !empty($params.keywords)}}{{$params.keywords}}{{/if}}" />
                         <span class="am-input-group-btn">
                             <button class="am-btn am-btn-default am-radius" type="submit" data-am-loading="{spinner:'circle-o-notch', loadingText:'搜索中...'}">搜索</button>
@@ -119,6 +120,7 @@
                     <tr>
                         <th>用户信息</th>
                         <th class="am-hide-sm-only">优惠劵名称</th>
+                        <th class="am-hide-sm-only">coupon code</th>
                         <th class="am-hide-sm-only">是否有效</th>
                         <th class="am-hide-md-down">是否使用</th>
                         <th class="am-hide-md-down">是否过期</th>
@@ -145,6 +147,7 @@
                                     {{/if}}
                                 </td>
                                 <td class="am-hide-sm-only">{{$v.coupon_name}}</td>
+                                <td class="am-hide-sm-only">{{$v.coupon_code}}</td>
                                 <td class="am-hide-sm-only">
                                     <a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_valid'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:PluginsAdminUrl('coupon', 'user', 'statusupdate')}}" data-id="{{$v.id}}" data-state="{{$v['is_valid']}}" data-is-update-status="1" data-field="is_valid"></a>
                                 </td>
@@ -222,6 +225,9 @@
                                     </div>
                                 </td>
                                 <td>
+                                    {{if $v['is_use'] eq 0}}
+                                    <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-edit submit-ajax" data-view="reload" data-msg="核销后无法恢复，确定继续吗？" data-url="{{:PluginsAdminUrl('coupon', 'user', 'verify')}}" data-id="{{$v.id}}"> 核销</button>
+                                    {{/if}}
                                     <button class="am-btn am-btn-danger am-btn-xs am-radius am-icon-trash-o submit-delete" data-url="{{:PluginsAdminUrl('coupon', 'user', 'delete')}}" data-id="{{$v.id}}"> 删除</button>
                                 </td>
                             </tr>
@@ -242,6 +248,38 @@
     </div>
 </div>
 <!-- right content end  -->
+
+<script>
+    window.onload = function(e){
+        var code = "";
+        var lastTime,nextTime;
+        var lastCode,nextCode;
+
+        document.onkeypress = function(e) {
+            nextCode = e.which;
+            nextTime = new Date().getTime();
+
+            if(lastCode != null && lastTime != null && nextTime - lastTime <= 30) {
+                code += String.fromCharCode(lastCode); 
+            } else if(lastCode != null && lastTime != null && nextTime - lastTime > 100){
+                code = "";
+            }
+
+            lastCode = nextCode;
+            lastTime = nextTime;
+        }
+
+        this.onkeypress = function(e){
+            if(e.which == 13){
+                $('#coupon_code_s').val(code); //自动填充到表单
+                $('#search_form').submit();  //自动提交指定的表单
+                console.log(code);
+                code = "";
+            }
+        } 
+    }
+
+</script>
         
 <!-- footer start -->
 {{include file="public/footer" /}}
