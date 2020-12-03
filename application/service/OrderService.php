@@ -221,7 +221,7 @@ class OrderService
 
                 // 支付模块处理数据
                 'data'          => $ret['data'],
-                'notice_ids'    => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec',
+                'notice_ids'    => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec,ECOwsadqyExeD0jXSWuUH8YXIrr4eQqVcoqEdRG0Z14',
             ];
 
             return $ret;

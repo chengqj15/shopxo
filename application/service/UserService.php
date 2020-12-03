@@ -1916,7 +1916,7 @@ class UserService
         $user_id = Db::name('User')->insertGetId($data);
         if($user_id > 0)
         {
-            UserLevelService::initUserLevelInfo();
+            UserLevelService::initUserLevelInfo($user_id);
             Db::commit();
         } else {
             Db::rollback();

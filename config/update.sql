@@ -146,9 +146,12 @@ CREATE TABLE IF NOT EXISTS `s_system_user_task` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='等级任务设置' AUTO_INCREMENT=1 ;
 
 alter table `s_order_detail` add column `discount_price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '折前价格' after `original_price`;
+alter table `s_order_detail` add column `discount_total_price` decimal(10,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '折前价格' after `original_price`;
+
 alter table `s_order_detail` add column `deliver_number` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '发货数量' after `buy_number`;
 update `s_order_detail` set deliver_number=buy_number;
 update `s_order_detail` set before_discount_price=price;
 
 alter table `s_order` add column `out_of_stock` tinyint(1) NOT NULL DEFAULT '0' COMMENT '缺货处理' after `order_model`;
+alter table `s_order` add column `is_under_line` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否线下' after `order_model`;
 

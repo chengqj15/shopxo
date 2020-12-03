@@ -1188,7 +1188,7 @@ class BuyService
             'buy_number_count'      => array_sum(array_column($buy['data']['goods'], 'stock')),
             'client_type'           => (APPLICATION_CLIENT_TYPE == 'pc' && IsMobile()) ? 'h5' : APPLICATION_CLIENT_TYPE,
             'order_model'           => $site_model,
-            'out_of_stock'          => $params['out_of_stock'] || 0,
+            'out_of_stock'          => isset($params['out_of_stock']) ? $params['out_of_stock'] : 0,
             'add_time'              => time(),
         ];
         if($order['status'] == 1)

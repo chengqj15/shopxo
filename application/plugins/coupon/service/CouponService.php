@@ -751,7 +751,8 @@ class CouponService
         $ret = self::CouponSend($coupon_params);
         if($ret['code'] == 0)
         {
-            $data = ['notice_ids' => ''];
+            // 优惠券即将过期提醒
+            $data = ['notice_ids' => 'ECOwsadqyExeD0jXSWuUH8YXIrr4eQqVcoqEdRG0Z14'];
             return DataReturn('领取成功', 0, $data);
         }
         return $ret;
