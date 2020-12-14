@@ -796,11 +796,11 @@ class BuyService
                 if(!empty($params['address_id']))
                 {
                     $address_params['where'] = ['id' => $params['address_id']];
-                }
-                $ads = UserService::UserDefaultAddress($address_params);
-                if(!empty($ads['data']))
-                {
-                    $address = $ads['data'];
+                    $ads = UserService::UserDefaultAddress($address_params);
+                    if(!empty($ads['data']))
+                    {
+                        $address = $ads['data'];
+                    }
                 }
             }
 
@@ -824,12 +824,13 @@ class BuyService
                 if(!empty($params['contact_address']))
                 {
                     $address_params['where'] = ['id' => $params['contact_address']];
+                    $ads = UserService::UserDefaultAddress($address_params);
+                    if(!empty($ads['data']))
+                    {
+                        $contact_address = $ads['data'];
+                    }
                 }
-                $ads = UserService::UserDefaultAddress($address_params);
-                if(!empty($ads['data']))
-                {
-                    $contact_address = $ads['data'];
-                }
+                
             }
 
             // 商品/基础信息

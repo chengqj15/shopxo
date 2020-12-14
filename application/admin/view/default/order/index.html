@@ -98,6 +98,7 @@
         </form>
         <!-- form end -->
 
+
         <!-- top operation start -->
         <div class="am-g am-margin-top-sm">
             <!-- 顶部操作钩子 -->
@@ -225,6 +226,7 @@
 								{{if $v['user_is_delete_time'] neq 0}}
 									<span class="block am-text-warning am-text-xs">用户已删除</span>
 								{{/if}}
+                                <span class="block am-text-danger am-text-xs">({{$v['out_of_stock_type']}})</span>
 							</td>
 							<td>
 								金额：{{$v.price}}<br />
@@ -486,12 +488,12 @@
                                     {{if in_array($v['status'], [0,1])}}
                                     <button class="am-btn am-btn-warning am-btn-xs am-radius am-icon-paint-brush am-btn-block submit-ajax" data-url="{{:MyUrl('admin/order/cancel')}}" data-id="{{$v.id}}" data-value="{{$v.user_id}}" data-view="reload" data-msg="取消后无法恢复，确定继续吗？"> 取消</button>
                                     {{/if}}
-									{{if in_array($v['status'], [1])}}
+									<!-- {{if in_array($v['status'], [1])}}
                                         <button class="am-btn am-btn-success am-btn-xs am-radius am-icon-paypal am-btn-block submit-pay" data-id="{{$v.id}}" data-payment-id="{{$v.payment_id}}" data-am-modal="{target: '#order-pay-popup'}"> 支付</button>
-                                    {{/if}}
+                                    {{/if}} -->
 								{{/if}}
 								{{if in_array($v['status'], [2,3,4])}}
-									   <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-send-o am-btn-block submit-delivery" data-url="{{:MyUrl('admin/order/delivery')}}" data-id="{{$v.id}}" data-user-id="{{$v.user_id}}" data-status="{{$v.status}}" data-order-model="{{$v.order_model}}" data-items-url="{{:MyUrl('admin/order/detail')}}" data-express-id="{{$v.express_id}}" data-am-modal="{target: '#order-delivery-popup'}"> 
+									   <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-send-o am-btn-block submit-delivery" data-url="{{:MyUrl('admin/order/delivery')}}" data-id="{{$v.id}}" data-user-id="{{$v.user_id}}" data-status="{{$v.status}}" data-order-model="{{$v.order_model}}" data-items-url="{{:MyUrl('admin/order/detail')}}" data-express-id="{{$v.express_id}}" data-am-modal="{target: '#order-delivery-popup', width: 1024}"> 
                                         {{if $v['status'] eq 2}}发货
                                         {{else /}}退货
                                         {{/if}}
@@ -637,14 +639,14 @@
                             <table class="am-table am-table-bordered am-table-centered am-table-compact am-margin-vertical-xs am-sm-only-text-justify data-list">
                                 <thead>
                                     <tr>
-                                        <th>name</th>
-                                        <th>spec</th>
-                                        <th>price</th>
-                                        <th>count</th>
-                                        <th>model</th>
-                                        <th>spec code</th>
-                                        <th>已退数</th>  
-                                        <th>退货数</th>                        
+                                        <th width="30%">name</th>
+                                        <th width="5%">spec</th>
+                                        <th width="10%">price</th>
+                                        <th width="5%">count</th>
+                                        <th width="5%">model</th>
+                                        <th width="20%">spec code</th>
+                                        <th width="10%">已退数</th>  
+                                        <th width="15%">退货数</th>                        
                                     </div>
                                     </tr>
                                 </thead>

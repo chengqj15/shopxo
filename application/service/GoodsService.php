@@ -267,7 +267,7 @@ class GoodsService
      */
     public static function HomeNewList($params = [])
     {
-        $goods = self::GoodsList(['where'=>['is_home_recommended'=>1, 'is_shelves'=>1], 'm'=>0, 'n'=>4, 'order_by'=>'upd_time desc']);
+        $goods = self::GoodsList(['where'=>['is_home_recommended'=>1, 'is_shelves'=>1, 'is_new'=>1], 'm'=>0, 'n'=>4, 'order_by'=>'upd_time desc']);
         return $goods;
     }
 
@@ -283,7 +283,7 @@ class GoodsService
     public static function HomeHotList($params = [])
     {
         // 商品大分类
-        $goods = self::GoodsList(['where'=>['is_home_recommended'=>1, 'is_shelves'=>1], 'm'=>0, 'n'=>4, 'order_by'=>'access_count desc']);
+        $goods = self::GoodsList(['where'=>['is_home_recommended'=>1, 'is_shelves'=>1, 'is_hot'=>1], 'm'=>0, 'n'=>4, 'order_by'=>'access_count desc']);
         return $goods;
     }
 
@@ -355,7 +355,7 @@ class GoodsService
     {
         $where = empty($params['where']) ? [] : $params['where'];
         $field = empty($params['field']) ? 'g.*' : $params['field'];
-        $order_by = empty($params['order_by']) ? 'g.id desc' : trim($params['order_by']);
+        $order_by = empty($params['order_by']) ? 'g.brand_id asc, g.id desc' : trim($params['order_by']);
 
         $m = isset($params['m']) ? intval($params['m']) : 0;
         $n = isset($params['n']) ? intval($params['n']) : 10;
@@ -2095,7 +2095,7 @@ class GoodsService
         // 数据更新
         if(Db::name('Goods')->where(['id'=>intval($params['id'])])->update([$params['field']=>intval($params['state']), 'upd_time'=>time()]))
         {
-            return DataReturn('操作成功');
+            return DataReturn('操作成功' . $params['field'] . intval($params['state']));
         }
         return DataReturn('操作失败', -100);
     }

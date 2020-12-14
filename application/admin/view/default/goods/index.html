@@ -146,6 +146,8 @@
 					<th class="am-hide-sm-only">销售价格(元)</th>
 					<th>上下架</th>
 					<th class="am-hide-sm-only">首页推荐</th>
+                    <th class="am-hide-sm-only">最新</th>
+                    <th class="am-hide-sm-only">热销</th>
 					<th class="am-hide-sm-only">库存数量</th>
 					<th class="am-hide-sm-only">商品型号</th>
 					<th class="am-hide-sm-only">品牌</th>
@@ -179,6 +181,12 @@
 							<td class="am-hide-sm-only">
 								<a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_home_recommended'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:MyUrl('admin/goods/statushomerecommended')}}" data-id="{{$v.id}}" data-state="{{$v['is_home_recommended']}}" data-is-update-status="0"></a>
 							</td>
+                            <td class="am-hide-sm-only">
+                                <a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_new'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:MyUrl('admin/goods/statusnew')}}" data-id="{{$v.id}}" data-state="{{$v['is_new']}}" data-is-update-status="0"></a>
+                            </td>
+                            <td class="am-hide-sm-only">
+                                <a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_hot'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:MyUrl('admin/goods/statushot')}}" data-id="{{$v.id}}" data-state="{{$v['is_hot']}}" data-is-update-status="0"></a>
+                            </td>
 							<td class="am-hide-sm-only">{{$v.inventory}} {{$v.inventory_unit}}</td>
 							<td class="am-hide-sm-only">{{$v.model}}</td>
 							<td class="am-hide-sm-only">{{$v.brand_name}}</td>

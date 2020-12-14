@@ -80,7 +80,7 @@ return array(
     // 支付状态
     'common_order_pay_status'   => array(
             0 => array('id' => 0, 'name' => 'Waiting payment', 'checked' => true),
-            1 => array('id' => 1, 'name' => 'Paied'),
+            1 => array('id' => 1, 'name' => 'Paid'),
             2 => array('id' => 2, 'name' => 'Refunded'),
             3 => array('id' => 3, 'name' => 'Partial refund'),
         ),
@@ -322,6 +322,13 @@ return array(
             0 => array('value' => 0, 'name' => '原路退回'),
             1 => array('value' => 1, 'name' => '退至钱包'),
             2 => array('value' => 2, 'name' => '手动处理'),
+        ),
+
+    // 缺货处理方式
+    'out_of_stock_type_list' =>  array(
+            0 => array('value' => 0, 'name' => '缺货直接取消订单'),
+            1 => array('value' => 1, 'name' => '其他商品继续配送（缺货商品退款）'),
+            // 2 => array('value' => 2, 'name' => '缺货时与我电话沟通'),
         ),
 
     // 商品评分

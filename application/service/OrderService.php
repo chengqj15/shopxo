@@ -732,6 +732,7 @@ class OrderService
             $order_pay_status = lang('common_order_pay_status');
             $common_platform_type = lang('common_platform_type');
             $common_site_type_list = lang('common_site_type_list');
+            $common_out_of_stock_type_list = lang('out_of_stock_type_list');
             foreach($data as &$v)
             {
                 // 订单处理前钩子
@@ -782,6 +783,9 @@ class OrderService
 
                 // 支付状态
                 $v['pay_status_name'] = $order_pay_status[$v['pay_status']]['name'];
+
+                // 缺货处理
+                $v['out_of_stock_type'] = isset($common_out_of_stock_type_list[$v['out_of_stock']]) ? $common_out_of_stock_type_list[$v['out_of_stock']]['name'] : '未知';
 
                 // 快递公司
                 $v['express_name'] = ExpressService::ExpressName($v['express_id']);

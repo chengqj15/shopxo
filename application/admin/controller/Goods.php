@@ -329,5 +329,49 @@ class Goods extends Common
 		$params['field'] = 'is_home_recommended';
 		return GoodsService::GoodsStatusUpdate($params);
 	}
+
+	/**
+	 * [StatusNew 是否新品状态更新]
+	 * @author   Devil
+	 * @blog     http://gong.gg/
+	 * @version  0.0.1
+	 * @datetime 2017-01-12T22:23:06+0800
+	 */
+	public function StatusNew()
+	{
+		// 是否ajax
+		if(!IS_AJAX)
+		{
+			return $this->error('非法访问');
+		}
+
+		// 开始操作
+		$params = input('post.');
+		$params['admin'] = $this->admin;
+		$params['field'] = 'is_new';
+		return GoodsService::GoodsStatusUpdate($params);
+	}
+
+	/**
+	 * [StatusHot 是否热销状态更新]
+	 * @author   Devil
+	 * @blog     http://gong.gg/
+	 * @version  0.0.1
+	 * @datetime 2017-01-12T22:23:06+0800
+	 */
+	public function StatusHot()
+	{
+		// 是否ajax
+		if(!IS_AJAX)
+		{
+			return $this->error('非法访问');
+		}
+
+		// 开始操作
+		$params = input('post.');
+		$params['admin'] = $this->admin;
+		$params['field'] = 'is_hot';
+		return GoodsService::GoodsStatusUpdate($params);
+	}
 }
 ?>
