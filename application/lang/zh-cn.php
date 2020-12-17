@@ -92,7 +92,7 @@ return array(
             2 => array('id' => 2, 'name' => 'Paid'),
             3 => array('id' => 3, 'name' => 'Delivered'),
             4 => array('id' => 4, 'name' => 'Done'),
-            5 => array('id' => 5, 'name' => 'Canceled'),
+            5 => array('id' => 5, 'name' => 'Cancelled'),
             6 => array('id' => 6, 'name' => 'Closed'),
         ),
 
@@ -326,9 +326,9 @@ return array(
 
     // 缺货处理方式
     'out_of_stock_type_list' =>  array(
-            0 => array('value' => 0, 'name' => '缺货直接取消订单'),
-            1 => array('value' => 1, 'name' => '其他商品继续配送（缺货商品退款）'),
-            // 2 => array('value' => 2, 'name' => '缺货时与我电话沟通'),
+            // 0 => array('value' => 0, 'name' => '1 缺货直接取消订单'),
+            0 => array('value' => 1, 'name' => '1 其他商品继续配送（缺货商品退款）'),
+            1 => array('value' => 2, 'name' => '2 请微信告知缺货商品（如客服1小时内未收到顾客回复，将按照选项1安排）'),
         ),
 
     // 商品评分
@@ -438,5 +438,7 @@ return array(
 
     // 图片比例值
     'common_regex_image_proportion'     =>  '^([1-9]{1}[0-9]?|[1-9]{1}[0-9]?\.{1}[0-9]{1,2}|100|0)?$',
+
+    'notice_ids' => 'TONywHfr-6nMyzuUcQ15Vgd1w5zG4_aL28cfDK5XG-w,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec,dyCdhTUD9QaKj2qWRDLRjfBTUhUywMnb2DPbQVnZiEE,ECOwsadqyExeD0jXSWuUH8YXIrr4eQqVcoqEdRG0Z14,y9f0OaKL8Xqw5SLjaVuOWTP73SZu7cByHm1nd65zTVA',
 );
 ?>

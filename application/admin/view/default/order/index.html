@@ -493,7 +493,7 @@
                                     {{/if}} -->
 								{{/if}}
 								{{if in_array($v['status'], [2,3,4])}}
-									   <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-send-o am-btn-block submit-delivery" data-url="{{:MyUrl('admin/order/delivery')}}" data-id="{{$v.id}}" data-user-id="{{$v.user_id}}" data-status="{{$v.status}}" data-order-model="{{$v.order_model}}" data-items-url="{{:MyUrl('admin/order/detail')}}" data-express-id="{{$v.express_id}}" data-am-modal="{target: '#order-delivery-popup', width: 1024}"> 
+									   <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-send-o am-btn-block submit-delivery" data-url="{{:MyUrl('admin/order/delivery')}}" data-id="{{$v.id}}" data-user-id="{{$v.user_id}}" data-status="{{$v.status}}" data-order-model="{{$v.order_model}}" data-items-url="{{:MyUrl('admin/order/detail')}}" data-express-id="{{$v.express_id}}" data-am-modal="{target: '#order-delivery-popup'}"> 
                                         {{if $v['status'] eq 2}}发货
                                         {{else /}}退货
                                         {{/if}}
@@ -626,7 +626,7 @@
         </div>
 
 		<!-- 发货弹窗 -->
-		<div class="am-popup" id="order-delivery-popup">
+		<div class="am-popup" id="order-delivery-popup" style="width: 880px">
 			<div class="am-popup-inner">
 				<div class="am-popup-hd">
 					<h4 class="am-popup-title">发货操作</h4>
@@ -638,17 +638,6 @@
                         <div class="delivery-tables">
                             <table class="am-table am-table-bordered am-table-centered am-table-compact am-margin-vertical-xs am-sm-only-text-justify data-list">
                                 <thead>
-                                    <tr>
-                                        <th width="30%">name</th>
-                                        <th width="5%">spec</th>
-                                        <th width="10%">price</th>
-                                        <th width="5%">count</th>
-                                        <th width="5%">model</th>
-                                        <th width="20%">spec code</th>
-                                        <th width="10%">已退数</th>  
-                                        <th width="15%">退货数</th>                        
-                                    </div>
-                                    </tr>
                                 </thead>
                                 <tbody>
                                     

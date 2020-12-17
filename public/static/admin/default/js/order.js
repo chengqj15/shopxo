@@ -43,14 +43,14 @@ $(function()
                     var tables = '<table id="delivery-table" class="am-table am-table-bordered am-table-centered am-table-compact am-margin-vertical-xs am-sm-only-text-justify data-list">' +
                             '<thead>' + 
                                 '<tr>' + 
-                                    '<th>name</th>' + 
-                                    '<th>spec</th>' + 
-                                    '<th>price</th>' + 
-                                    '<th>count</th>' + 
-                                    '<th>discount_price</th>' + 
-                                    '<th>barcode</th>' + 
-                                    '<th>已退数</th>' + 
-                                    '<th>退货数量</th>' +                         
+                                    '<th width="500px">name</th>' + 
+                                    // '<th>spec</th>' + 
+                                    '<th width="100px">price</th>' + 
+                                    '<th width="50px">count</th>' + 
+                                    '<th width="80px">discount_price</th>' + 
+                                    '<th width="230px">barcode</th>' + 
+                                    '<th width="80px">已退数</th>' + 
+                                    '<th width="400px">退货数量</th>' +                         
                                 '</div>' + 
                                 '</tr>' + 
                             '</thead>' + 
@@ -59,7 +59,7 @@ $(function()
                     for(var i in json){
                         body += '<tr>' +
                                 '<td>' + json[i].title + '</td>' +
-                                '<td>' + (json[i].spec_text || '') + '</td>' +
+                                // '<td>' + (json[i].spec_text || '') + '</td>' +
                                 '<td>' + json[i].price + '</td>' +
                                 '<td>' + json[i].buy_number + '</td>' +
                                 '<td>' + json[i].discount_price + '</td>' +

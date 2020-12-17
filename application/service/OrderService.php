@@ -221,7 +221,7 @@ class OrderService
 
                 // 支付模块处理数据
                 'data'          => $ret['data'],
-                'notice_ids'    => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec,ECOwsadqyExeD0jXSWuUH8YXIrr4eQqVcoqEdRG0Z14',
+                'notice_ids'    => lang('notice_ids'),
             ];
 
             return $ret;
@@ -701,6 +701,13 @@ class OrderService
 
     public static function OrderDetails($params = []){
         $order_id = $params['order_id'];
+
+        $order = Db::name('Order')->where(['id'=>intval($order_id)])->find();
+        if(empty($order))
+        {
+            return DataReturn('订单不存在或已被删除', -1);
+        }
+
         $items = Db::name('OrderDetail')->where(['order_id'=>$order_id])->select();
         return DataReturn('', 0, $items);
     }
@@ -1640,28 +1647,31 @@ class OrderService
             }
             $notice_param = [
                 'touser' => $weixin_openid,
-                'template_id' => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY',
+                'template_id' => 'TONywHfr-6nMyzuUcQ15Vgd1w5zG4_aL28cfDK5XG-w',
                 'page' => '/pages/user-order-detail/user-order-detail?id=' . $order['id'],
                 'data' => [
                     // 取件码
-                    'character_string1' => [
-                        'value' => $extraction_code,
-                    ],
+                    // 'character_string1' => [
+                    //     'value' => $extraction_code,
+                    // ],
                     // 订单号
-                    'character_string2' => [
+                    'character_string3' => [
                         'value' => $order['order_no'],
                     ],
                     // 联系电话
-                    'phone_number3' => [
-                        'value' => $address_data['tel'],
-                    ],
+                    // 'phone_number3' => [
+                    //     'value' => $address_data['tel'],
+                    // ],
                     // 取货地址
-                    'thing4' => [
+                    'thing7' => [
                         'value' => $address_data['address'],
                     ],
                     // 日期
-                    'time5' => [
+                    'time1' => [
                         'value' => date("Y-m-d H:i:s"),
+                    ],
+                    'thing4' => [
+                        'value' => '取件码:' . $extraction_code . ' 联系电话:' . $address_data['tel'],
                     ],
                 ]
             ];

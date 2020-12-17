@@ -222,7 +222,7 @@ class OrderAftersaleService
         if(Db::name('OrderAftersale')->insertGetId($data) > 0)
         {
             $data = [
-                'notice_ids'    => 'yK-SP3BxAQXWfRW1UG0CIYXiprxeEQ8UTBUuukd2nYY,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec,dyCdhTUD9QaKj2qWRDLRjfBTUhUywMnb2DPbQVnZiEE',
+                'notice_ids'    => lang('notice_ids'),
             ];
             return DataReturn('申请成功', 0, $data);
         }

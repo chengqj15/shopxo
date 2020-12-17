@@ -739,6 +739,7 @@ class BuyService
      */
     public static function BuyTypeGoodsList($params = [])
     {
+        $good_ids = [];
         if(isset($params['buy_type']))
         {
             switch($params['buy_type'])
@@ -752,11 +753,17 @@ class BuyService
                 // 正常购买
                 case 'goods' :
                     $ret = BuyService::BuyGoods($params);
+                    if($ret['code'] == 0){
+                        $good_ids = array_column($ret['data'], 'id');
+                    }
                     break;
 
                 // 购物车
                 case 'cart' :
                     $ret = BuyService::BuyCart($params);
+                    if($ret['code'] == 0){
+                        $good_ids = array_column($ret['data'], 'goods_id');
+                    }
                     break;
 
                 // 默认
@@ -835,6 +842,7 @@ class BuyService
 
             // 商品/基础信息
             $total_price = empty($goods) ? 0 : array_sum(array_column($goods, 'total_price')); 
+
             // 添加服务费
             $service_fee_ratio = MyC('common_order_service_fee_ratio', 0, true);
             $service_fee_upper_limit = MyC('common_order_service_fee_upper_limit', 0, true);
@@ -906,6 +914,26 @@ class BuyService
                 'site_model'            => $site_model,
             ];
 
+            // 最低消费
+            if($total_price < 10){
+                $base['low_price_limit'] = 1;
+                $base['low_price_limit_msg'] = '单笔消费需满$10包配货，还差$' . (10 - $total_price) . '哦。';
+            }
+
+            // 特殊商品
+            $categorys = Db::name('GoodsCategory')->field('id')->where(['pid'=>1058, 'is_enable'=>1])->select();
+            if(!empty($categorys) && !empty($good_ids)){
+                $category_ids = array_column($categorys, 'id');
+
+                $where = [['goods_id', 'in', $good_ids], ['category_id', 'in', $category_ids]];
+
+                $is_special_good = (int)Db::name('GoodsCategoryJoin')->where($where)->count();
+                if($is_special_good > 0){
+                    $base['special_good_limit'] = 1;
+                    $base['special_good_limit_msg'] = '本人确定是合法饮酒和购酒年龄，已准备好Photo ID取货。';
+                }
+            }
+            
             // 扩展展示数据
             // name 名称
             // price 金额
