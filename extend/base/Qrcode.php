@@ -62,7 +62,7 @@ class Qrcode
         {
             ob_clean();
         }
-        $image = $this->generator->getBarcode($content, $this->generator::TYPE_CODE_128);
+        $image = $this->generator->getBarcode($content, $this->generator::TYPE_EAN_13);
         // Header("Content-type: image/png");
         // ImagePng($image);
         // ImageDestroy($image);

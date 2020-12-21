@@ -89,6 +89,10 @@ class Index extends Common
 		// 近15日订单交易走势
 		$order_trading_trend = StatisticalService::OrderTradingTrendSevenTodayTotal();
 		$this->assign('order_trading_trend', $order_trading_trend['data']);
+
+		// 近15日收入金额走势
+		$order_amount_trend = StatisticalService::OrderAmountTrendSevenTodayTotal();
+		$this->assign('order_amount_trend', $order_amount_trend['data']);
 		
 		// 近15日订单支付方式
 		$order_type_number = StatisticalService::OrderPayTypeSevenTodayTotal();

@@ -890,7 +890,7 @@ class OrderService
                     $v['items_count'] = count($items);
 
                     // 描述
-                    $v['describe'] = 'total:'.$v['buy_number_count'].' pcs amount:'.config('shopxo.price_symbol').$v['total_price'];
+                    $v['describe'] = 'Total:'.$v['buy_number_count'].' pcs Amount:'.config('shopxo.price_symbol').$v['total_price'];
                     if($v['returned_quantity'] > 0){
                         $v['describe'] = $v['describe'] . ' refund: ' . $v['returned_quantity'] . ' pcs';
                     }

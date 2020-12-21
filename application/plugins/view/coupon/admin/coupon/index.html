@@ -142,7 +142,7 @@
                     <tr>
                         <th>名称</th>
                         <th class="am-hide-sm-only">描述</th>
-                        <th class="am-hide-md-down">背景色</th>
+                        <th class="am-hide-md-down">条形码</th>
                         <th class="am-hide-md-down">过期类型</th>
                         <th class="am-hide-md-down">使用限制</th>
                         <th>优惠信息</th>
@@ -168,7 +168,7 @@
                                     {{/if}}
                                 </td>
                                 <td class="am-hide-sm-only">{{$v.desc}}</td>
-                                <td class="am-hide-md-down">{{$v.bg_color_name}}</td>
+                                <td class="am-hide-md-down">{{$v.coupon_code}}</td>
                                 <td class="am-hide-md-down">{{$v.expire_type_name}}</td>
                                 <td class="am-hide-md-down">
                                     {{$v.use_limit_type_name}}
@@ -227,8 +227,8 @@
                                                     <dt>描述</dt>
                                                     <dd>{{$v.desc}}</dd>
 
-                                                    <dt>背景色</dt>
-                                                    <dd>{{$v.bg_color_name}}</dd>
+                                                    <dt>条形码</dt>
+                                                    <dd>{{$v.coupon_code}}</dd>
 
                                                     <dt>过期类型</dt>
                                                     <dd>

@@ -35,6 +35,9 @@ alter table s_plugins_coupon_user add column `buy_order_id` int(11) unsigned NOT
 alter table s_plugins_coupon_user modify column `coupon_code` varchar(20) NOT NULL DEFAULT '0' COMMENT '优惠券序列号' after `coupon_id`;
 alter table s_plugins_coupon_user add UNIQUE index `coupon_code`(`coupon_code`);
 
+alter table s_plugins_coupon add column `coupon_code` varchar(20) NOT NULL DEFAULT '0' COMMENT '优惠券序列号' after `id`;
+alter table s_plugins_coupon add UNIQUE index `coupon_code`(`coupon_code`);
+
 # 用户优惠劵表
 CREATE TABLE IF NOT EXISTS `{PREFIX}plugins_coupon_user` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',

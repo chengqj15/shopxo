@@ -15,6 +15,7 @@ use app\plugins\coupon\api\Common;
 use app\plugins\coupon\service\BaseService;
 use app\plugins\coupon\service\CouponService;
 use app\plugins\coupon\service\UserCouponService;
+use app\plugins\coupon\service\UserCouponAdminService;
 
 /**
  * 用户优惠券
@@ -111,10 +112,44 @@ class Coupon extends Common
             return DataReturn('invalid coupon id', -1); 
         }
 
+        $coupon_params = [
+            'where' => [
+                'id' => $data['coupon_id'],           
+            ],
+        ];
+        $coupon_data = CouponService::CouponDetail($coupon_params);
+        if(empty($coupon_data)){
+            return DataReturn('invalid coupon', -1); 
+        }
+
         // $images = MyUrl('index/qrcode/barcode', ['content'=>urlencode(base64_encode($data['coupon_code']))]);
-        $images = (new \base\Qrcode())->BarcodeView(['content'=>urlencode(base64_encode($data['coupon_code']))]);
+        $images = (new \base\Qrcode())->BarcodeView(['content'=>urlencode(base64_encode($coupon_data['coupon_code']))]);
         $data['images'] = $images;
+        $data['coupon_barcode'] = $coupon_data['coupon_code'];
+        $data['msg'] = '请向收银员出示此核销码';
         return DataReturn('success', 0, $data); 
+    }
+
+    public function Verify($params = [])
+    {
+        // 是否ajax请求
+        if(!IS_AJAX)
+        {
+            return $this->error('非法访问');
+        }
+        $coupon_params = [
+            'where' => [
+                'id' => $params['id'],
+                'user_id'   => $this->user['id'],
+                'is_valid'  => 1,
+            ],
+        ];
+        $data = UserCouponService::UserCouponDetail($coupon_params);
+        if(empty($data)){
+            return DataReturn('invalid coupon id', -1); 
+        }
+
+        return UserCouponAdminService::UserCouponVerify($params);
     }
 
 }

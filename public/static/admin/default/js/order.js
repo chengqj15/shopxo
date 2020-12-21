@@ -1,9 +1,10 @@
 $(function()
 {
-    // 支付操作
+    // 发货/退货操作
     $('.submit-delivery').on('click', function()
     {
         $('form.delivery-form input[name=id]').val($(this).data('id'));
+
         var user_id = $(this).data('user-id') || 0;
         $('form.delivery-form input[name=user_id]').val(user_id);
 
@@ -26,6 +27,12 @@ $(function()
         $('.refund-items-0').addClass('selected').siblings('li').removeClass('selected');
 
         var status = $(this).data('status');
+        if(status == 2){
+            $('#order-delivery-popup-title').html('发货操作');
+            $('msg-group').html($(this).data('out-of-stock'));
+        }else{
+            $('#order-delivery-popup-title').html('退货操作');
+        }
         $('form.delivery-form input[name=order_status]').val(status);
         $('form.delivery-form input[name=order_model]').val(order_model);
         // ajax请求

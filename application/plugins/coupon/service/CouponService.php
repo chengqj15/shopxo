@@ -217,6 +217,13 @@ class CouponService
             $data['buy_amount'] = PriceNumberFormat($params['buy_amount']);
         }
 
+        if(empty($params['coupon_code']) ){
+            $data['coupon_code'] = '09' . date('ymd').GetNumberCode(4);
+            $data['coupon_code'] .= self::calculateChecksumDigit($data['coupon_code']);
+        }else{
+            $data['coupon_code'] = $params['coupon_code'];
+        }
+
         if(empty($coupon))
         {
             $data['add_time'] = time();
@@ -233,6 +240,12 @@ class CouponService
             }
             return DataReturn('编辑失败', -100); 
         }
+    }
+
+    public static function CouponDetail($params)
+    {
+        $data = Db::name('PluginsCoupon')->where($params['where'])->find();
+        return $data;
     }
 
     /**
@@ -678,15 +691,17 @@ class CouponService
         $add_time = time();
         foreach($params['user_ids'] as $user_id)
         {
+            $code = '99' . date('ymd').GetNumberCode(4);
+            $code .= self::calculateChecksumDigit($code);
             $data[] = [
                 'coupon_id'     => $coupon['id'],
-                'coupon_code'   => date('YmdHis').GetNumberCode(6),
                 'user_id'       => $user_id,
                 'is_valid'      => 1,
                 'time_start'    => $time_start,
                 'time_end'      => $time_end,
                 'add_time'      => $add_time,
                 'buy_order_id'  => $buy_order_id,
+                'coupon_code'   => $code,
             ];
         }
 
@@ -800,6 +815,32 @@ class CouponService
             return DataReturn('领取成功', 0);
         }
         return $ret;
+    }
+
+    public static function calculateChecksumDigit(string $code)
+    {
+        // calculate check digit
+        $sum_a = 0;
+        $length = 13;
+        for ($i = 1; $i <$length - 1; $i += 2) {
+            $sum_a += $code[$i];
+        }
+        if ($length > 12) {
+            $sum_a *= 3;
+        }
+        $sum_b = 0;
+        for ($i = 0; $i < $length - 1; $i += 2) {
+            $sum_b += intval(($code[$i]));
+        }
+        if ($length < 13) {
+            $sum_b *= 3;
+        }
+        $checksumDigit = ($sum_a + $sum_b) % 10;
+        if ($checksumDigit > 0) {
+            $checksumDigit = (10 - $checksumDigit);
+        }
+
+        return $checksumDigit;
     }
 }
 ?>

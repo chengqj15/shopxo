@@ -493,7 +493,7 @@
                                     {{/if}} -->
 								{{/if}}
 								{{if in_array($v['status'], [2,3,4])}}
-									   <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-send-o am-btn-block submit-delivery" data-url="{{:MyUrl('admin/order/delivery')}}" data-id="{{$v.id}}" data-user-id="{{$v.user_id}}" data-status="{{$v.status}}" data-order-model="{{$v.order_model}}" data-items-url="{{:MyUrl('admin/order/detail')}}" data-express-id="{{$v.express_id}}" data-am-modal="{target: '#order-delivery-popup'}"> 
+									   <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-send-o am-btn-block submit-delivery" data-url="{{:MyUrl('admin/order/delivery')}}" data-id="{{$v.id}}" data-user-id="{{$v.user_id}}" data-status="{{$v.status}}" data-order-model="{{$v.order_model}}" data-items-url="{{:MyUrl('admin/order/detail')}}" data-express-id="{{$v.express_id}}" data-am-modal="{target: '#order-delivery-popup'}" data-out-of-stock="{{$v.out_of_stock_type}}"> 
                                         {{if $v['status'] eq 2}}发货
                                         {{else /}}退货
                                         {{/if}}
@@ -629,7 +629,7 @@
 		<div class="am-popup" id="order-delivery-popup" style="width: 880px">
 			<div class="am-popup-inner">
 				<div class="am-popup-hd">
-					<h4 class="am-popup-title">发货操作</h4>
+					<h4 class="am-popup-title" id='order-delivery-popup-title'>发货操作</h4>
 					<span data-am-modal-close class="am-close">&times;</span>
 				</div>
 				<div class="am-popup-bd">
@@ -643,6 +643,8 @@
                                     
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="am-form-group" id="msg-group">
                         </div>
                         <div class="business-item">
                             <h3>** 如果缺货，请选择退款方式</h3>

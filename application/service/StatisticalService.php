@@ -351,6 +351,54 @@ class StatisticalService
     }
 
     /**
+     * 订单交易趋势, 30天数据
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  0.0.1
+     * @datetime 2016-12-06T21:31:53+0800
+     * @param    [array]          $params [输入参数]
+     */
+    public static function OrderAmountTrendSevenTodayTotal($params = [])
+    {
+        // 初始化
+        self::Init($params);
+
+        // 循环获取统计数据
+        $data = [];
+        $count_arr = [];
+        $name_arr = [];
+
+        foreach(self::$nearly_thirty_days as $day)
+        {
+            // 当前日期名称
+            $name_arr[] = $day['name'];
+
+            // 获取订单
+            $where = [
+                ['status', 'in', [2,3,4]],
+                ['add_time', '>=', $day['start_time']],
+                ['add_time', '<=', $day['end_time']],
+            ];
+            $count_arr[] = Db::name('Order')->where($where)->sum('total_price');
+        }
+
+        // 数据格式组装
+         $data[] = [
+                'name'      => '总量',
+                'type'      => 'line',
+                'tiled'     => '总量',
+                'data'      => $count_arr,
+            ];
+
+        // 数据组装
+        $result = [
+            'name_arr'  => $name_arr,
+            'data'      => $data,
+        ];
+        return DataReturn('处理成功', 0, $result);
+    }
+
+    /**
      * 订单支付方式, 30天数据
      * @author   Devil
      * @blog     http://gong.gg/
@@ -442,7 +490,7 @@ class StatisticalService
         {
             $data = [];
         } else {
-            $data = Db::name('OrderDetail')->field('title AS name,sum(buy_number) AS value')->where('order_id', 'IN', $order_ids)->group('goods_id')->order('value desc')->limit(10)->select();
+            $data = Db::name('OrderDetail')->field('title AS name,sum(buy_number) AS value')->where('order_id', 'IN', $order_ids)->group('goods_id')->order('value desc')->limit(100)->select();
         }
 
         if(!empty($data))

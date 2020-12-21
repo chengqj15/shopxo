@@ -23,6 +23,10 @@
                         <label>优惠劵名称<span class="am-form-group-label-tips">如 满300减10</span></label>
                         <input type="text" name="name" placeholder="请输入优惠劵名称" maxlength="30" data-validation-message="优惠劵名称格式最多 30 个字符" class="am-radius" {{if !empty($data['name'])}} value="{{$data.name}}"{{/if}} required />
                     </div>
+                    <div class="am-form-group">
+                        <label>条形码</label>
+                        <input type="text" name="coupon_code" placeholder="请输入条形码，默认由系统自动生成" maxlength="13" data-validation-message="条形码最多 13 个字符" class="am-radius" {{if !empty($data['coupon_code'])}} value="{{$data.coupon_code}}"{{/if}}/>
+                    </div>
 
                     <div class="am-form-group">
                         <label>优惠劵描述</label>
@@ -77,6 +81,7 @@
                         <label class="block">是否启用<span class="am-form-group-label-tips">默认否</span></label>
                         <input name="is_enable" value="1" type="checkbox" data-off-text="否" data-on-text="是" data-size="xs" data-on-color="success" data-off-color="default" data-handle-width="50" data-am-switch {{if isset($data['is_enable']) and $data['is_enable'] eq 1}}checked="true"{{/if}} />
                     </div>
+
                 </div>
             </div>
 
