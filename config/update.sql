@@ -156,6 +156,6 @@ alter table `s_order` add column `out_of_stock` tinyint(1) NOT NULL DEFAULT '0' 
 alter table `s_order` add column `is_under_line` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否线下' after `order_model`;
 
 
-alter table `s_goods` add column `is_new` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否新品' after `is_home_recommended`;
-alter table `s_goods` add column `is_hot` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否热销' after `is_home_recommended`;
+alter table `s_goods` add column `is_new` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '是否新品' after `is_home_recommended`;
+alter table `s_goods` add column `is_hot` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '是否热销' after `is_home_recommended`;
 

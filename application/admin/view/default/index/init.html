@@ -211,51 +211,6 @@ $(function()
 	};
 	order_trading_chart.setOption(option);
 
-	// 近30日收入金额走势
-    var order_trading_chart = echarts.init(document.getElementById('echarts-order-trading'), 'macarons');
-    var option = {
-	    tooltip : {
-	        trigger: 'axis',
-	        axisPointer: {
-	            type: 'cross',
-	            label: {
-	                backgroundColor: '#6a7985'
-	            }
-	        }
-	    },
-	    toolbox: {
-	        show : {{if IsMobile()}}false{{else}}true{{/if}},
-	        feature : {
-	            mark : {show: true},
-	            dataView : {show: true, readOnly: false},
-	            magicType : {show: true, type: ['line', 'bar', 'stack', 'tiled']},
-	            restore : {show: true},
-	            saveAsImage : {name:'近30日订单交易走势', show: true}
-	        }
-	    },
-	    grid: {
-	        left: '3%',
-	        right: '4%',
-	        bottom: '3%',
-	        containLabel: true
-	    },
-	    xAxis : [
-	        {
-	            type : 'category',
-	            boundaryGap : false,
-	            data : {{:json_encode($order_trading_trend.name_arr)}}
-	        }
-	    ],
-	    yAxis : [
-	        {
-	            type : 'value'
-	        }
-	    ],
-	    series : {{:json_encode($order_trading_trend.data)}}
-	};
-	order_trading_chart.setOption(option);
-
-
     // 近30日热销商品
     var goods_hot_chart = echarts.init(document.getElementById('echarts-goods-hot'), 'macarons');
     var option = {

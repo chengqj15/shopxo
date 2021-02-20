@@ -166,6 +166,8 @@ class BaseService
     public static function BuyCouponExclude($data, $goods_ids, $goods)
     {
         $coupon = [];
+        
+        
         if(!empty($data) && !empty($goods_ids))
         {
             foreach($goods_ids as $goods_id)
@@ -189,6 +191,22 @@ class BaseService
             // 根据当前订单商品排除不满足的优惠劵
             if(!empty($coupon))
             {
+                $time_start = date('Y-m-d');
+                foreach($coupon as $k=>$v)
+                {
+                    // 过滤时间
+                    if(isset($v['coupon']) && isset($v['coupon']['time_start_text'])){
+                        if($v['coupon']['time_start_text'] > $time_start || $v['coupon']['time_end_text'] < $time_start)
+                        {
+                            unset($coupon[$k]);
+                        }
+                    }else if(isset($v['time_start_text'])){
+                        if($v['time_start_text'] > $time_start || $v['time_end_text'] < $time_start)
+                        {
+                            unset($coupon[$k]);
+                        }
+                    }
+                }
                 $order_total_price = array_sum(array_column($goods, 'total_price'));
                 foreach($coupon as $k=>$v)
                 {

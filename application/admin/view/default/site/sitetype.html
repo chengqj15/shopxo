@@ -90,8 +90,8 @@
                     </div>
 
                     <div class="am-form-group">
-                        <label>{{$data.common_self_extraction_hours.name}}<span class="am-form-group-label-tips">{{$data.common_self_extraction_hours.describe}}</span></label>
-                        <input type="text" name="{{$data.common_self_extraction_hours.only_tag}}" placeholder="{{$data.common_self_extraction_hours.describe}}" data-validation-message="{{$data.common_self_extraction_hours.error_tips}}" class="am-radius" {{if !empty($data)}}value="{{$data.common_self_extraction_hours.value}}"{{/if}} />
+                        <label>{{$data.common_self_extraction_config.name}}<span class="am-form-group-label-tips">{{$data.common_self_extraction_config.describe}}</span></label>
+                        <input type="text" name="{{$data.common_self_extraction_config.only_tag}}" placeholder="{{$data.common_self_extraction_config.describe}}" data-validation-message="{{$data.common_self_extraction_config.error_tips}}" class="am-radius" {{if !empty($data)}}value="{{$data.common_self_extraction_config.value|raw}}"{{/if}} />
                     </div>
 
                     <div class="am-form-group">

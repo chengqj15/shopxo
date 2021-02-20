@@ -317,6 +317,7 @@
                                         <a href="{{:PluginsAdminUrl('coupon', 'user', 'index', ['coupon_id'=>$v['id'], 'is_more'=>1])}}" class="am-block am-margin-top-xs">
                                             <button class="am-btn am-btn-default am-btn-xs am-radius am-icon-user"> 用户</button>
                                         </a>
+                                        <button class="am-btn am-btn-success am-btn-xs am-radius am-icon-send-o submit-ajax am-margin-top-xs" data-url="{{:PluginsAdminUrl('coupon', 'coupon', 'notice')}}" data-id="{{$v.id}}"> 提醒</button>
                                     {{else /}}
                                         <button class="am-btn am-btn-danger am-btn-xs am-radius am-icon-trash-o submit-delete am-margin-top-xs" data-url="{{:PluginsAdminUrl('coupon', 'coupon', 'delete')}}" data-id="{{$v.id}}"> 删除</button>
                                     {{/if}}

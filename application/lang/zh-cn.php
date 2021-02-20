@@ -439,6 +439,10 @@ return array(
     // 图片比例值
     'common_regex_image_proportion'     =>  '^([1-9]{1}[0-9]?|[1-9]{1}[0-9]?\.{1}[0-9]{1,2}|100|0)?$',
 
-    'notice_ids' => 'TONywHfr-6nMyzuUcQ15Vgd1w5zG4_aL28cfDK5XG-w,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec,dyCdhTUD9QaKj2qWRDLRjfBTUhUywMnb2DPbQVnZiEE,ECOwsadqyExeD0jXSWuUH8YXIrr4eQqVcoqEdRG0Z14,y9f0OaKL8Xqw5SLjaVuOWTP73SZu7cByHm1nd65zTVA',
+    // 取货通知，订单状态通知，活动预热通知
+    'notice_id_buy' => 'TONywHfr-6nMyzuUcQ15Vgd1w5zG4_aL28cfDK5XG-w,UfSPnc3X9lmi2wvQIP2uqd3jjS8diJnmPtvbtUFy6Ec,y9f0OaKL8Xqw5SLjaVuOWTP73SZu7cByHm1nd65zTVA',
+
+    // 售后申请通知， 优惠券即将过期提醒
+    'notice_id_pay' => 'dyCdhTUD9QaKj2qWRDLRjfBTUhUywMnb2DPbQVnZiEE,ECOwsadqyExeD0jXSWuUH8YXIrr4eQqVcoqEdRG0Z14',
 );
 ?>

@@ -170,7 +170,7 @@ class UserLevelService
         if (!$levelInfo || $levelInfo['level_id'] == 0) 
         {
             Log::write('getUserLevel init user level');
-            return self::initUserLevelInfo($uid);
+            return self::initUserLevelInfo($uid, $levelInfo);
         }
         if ($levelInfo['valid_time'] == -1) 
         {//永久有效
@@ -346,17 +346,22 @@ class UserLevelService
         return UserTaskService::getTashList($uid);
     }
 
-    public static function initUserLevelInfo($uid)
+    public static function initUserLevelInfo($uid, $levelInfo = [])
     {
+        $isNew = false;
         $list = SystemUserLevel::getLevelListAndGrade();
-
-        $levelInfo = [
-            'id' => $uid,
-            'status' => 1,
-            'valid_time' => 0,
-            'add_time' => time(),
-            'upd_time' => time(),
-        ];
+        if($levelInfo && isset($levelInfo['id'])){
+            $isNew = false;
+        }else{
+            $levelInfo = [
+                'id' => $uid,
+                'status' => 1,
+                'valid_time' => 0,
+                'add_time' => time(),
+                'upd_time' => time(),
+            ];
+            $isNew = true;
+        }
         if(count($list) > 0 && $list[0]['point'] == 0){
             $levelInfo['level_id'] = $list[0]['id'];
             $levelInfo['grade'] = $list[0]['grade'];
@@ -368,14 +373,19 @@ class UserLevelService
         }else{
             Log::write('initUserLevelInfo not level available');
         }
-        $exist = true;
-        $level_no = '';
-        while($exist){
-            $level_no = date('Ymd').GetNumberCode(6);
-            $exist = Db::name(self::$name)->where('level_no', $level_no)->find();
+        if($isNew){
+            $exist = true;
+            $level_no = '';
+            while($exist){
+                $level_no = date('Ymd').GetNumberCode(6);
+                $exist = Db::name(self::$name)->where('level_no', $level_no)->find();
+            }
+            $levelInfo['level_no'] = $level_no;
+            Db::name(self::$name)->insertGetId($levelInfo);
+        }else{
+            Db::name(self::$name)->where('id',$uid)->update($levelInfo);
         }
-        $levelInfo['level_no'] = $level_no;
-        Db::name(self::$name)->insertGetId($levelInfo);
+        
         return $levelInfo;
     }
 

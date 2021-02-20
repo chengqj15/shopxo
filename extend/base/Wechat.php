@@ -238,8 +238,9 @@ class Wechat
             'lang' => 'zh_CN',
             'data' => $params['data']
         ];
-        Log::write('SendSubscribeMessage data:' . json_encode($data));
+        //Log::write('SendSubscribeMessage data:' . json_encode($data));
         $res = $this->HttpRequestPost($url, json_encode($data), false);
+        Log::write('SendSubscribeMessage res:' . $res);
         if(!empty($res))
         {
             if(stripos($res, 'errcode') === false)
@@ -247,6 +248,9 @@ class Wechat
                 return DataReturn('发送成功', 0, $res);
             }
             $res = json_decode($res, true);
+            if($res['errcode'] == 0){
+                return DataReturn('发送成功', 0);
+            }
             $msg = isset($res['errmsg']) ? $res['errmsg'] : '订阅消息发送失败';
         } else {
             $msg = '订阅消息发送失败';

@@ -1370,6 +1370,7 @@ class BuyService
         $result = [
             'order'     => $order,
             'jump_url'  => MyUrl('index/order/index'),
+            'notice_ids'    => lang('notice_id_buy'),
         ];
 
 

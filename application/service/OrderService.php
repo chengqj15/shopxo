@@ -92,11 +92,16 @@ class OrderService
         {
             return DataReturn('支付方式有误', -1);
         }
+        $is_transfer_pay = in_array($payment[0]['payment'], ['TransferPay', 'SuperPayTransferPay']) ? 1 : 0;
 
         // 更新订单支付方式
         if(!empty($params['payment_id']) && $params['payment_id'] != $order['payment_id'])
         {
-            Db::name('Order')->where(['id'=>$order['id']])->update(['payment_id'=>$payment_id, 'upd_time'=>time()]);
+            if($is_transfer_pay){
+                 Db::name('Order')->where(['id'=>$order['id']])->update(['payment_id'=>$payment_id, 'upd_time'=>time()]);               
+            }else{
+                Db::name('Order')->where(['id'=>$order['id']])->update(['payment_id'=>$payment_id, 'transfer_snap'=>'', 'upd_time'=>time()]);
+            }
         }
 
         // 金额为0直接支付成功
@@ -150,6 +155,30 @@ class OrderService
             }
         }
 
+        // 附件处理
+        $transfer_snap = [];
+        if($is_transfer_pay){
+            if(!empty($params['transfer_snap']))
+            {
+                if(!is_array($params['transfer_snap']))
+                {
+                    $params['transfer_snap'] = json_decode(htmlspecialchars_decode($params['transfer_snap']), true);
+                }
+                foreach($params['transfer_snap'] as $v)
+                {
+                    $transfer_snap[] = ResourcesService::AttachmentPathHandle($v);
+                }
+                if(count($transfer_snap) > 3)
+                {
+                    return DataReturn('凭证图片不能超过3张', -1);
+                }
+            }
+            if(count($transfer_snap) == 0)
+            {
+                return DataReturn('凭证图片不能为空', -1);
+            }
+        }
+
         // 发起支付数据
         $pay_data = array(
             'user'          => $params['user'],
@@ -165,6 +194,7 @@ class OrderService
             'redirect_url'  => MyUrl('index/order/detail', ['id'=>$order['id']]),
             'site_name'     => MyC('home_site_name', 'ShopXO', true),
             'ajax_url'      => MyUrl('index/order/paycheck'),
+            'transfer_snap' => join(",", $transfer_snap),
         );
 
         // 发起支付处理钩子
@@ -218,10 +248,10 @@ class OrderService
             $ret['data'] = [
                 // 是否为在线支付类型
                 'is_online_pay' => ($payment[0]['payment'] == 'WalletPay' || in_array($payment[0]['payment'], config('shopxo.under_line_list'))) ? 0 : 1,
-
+                'is_transfer_pay' => $is_transfer_pay,
                 // 支付模块处理数据
                 'data'          => $ret['data'],
-                'notice_ids'    => lang('notice_ids'),
+                'notice_ids'    => lang('notice_id_pay'),
             ];
 
             return $ret;
@@ -841,6 +871,16 @@ class OrderService
 
                 // 扩展数据
                 $v['extension_data'] = empty($v['extension_data']) ? null : json_decode($v['extension_data'], true);
+
+                if(!empty($v['transfer_snap'])){
+                    $snaps = explode(",", $v['transfer_snap']);
+                    $dest_snaps = [];
+                    foreach($snaps as $nap)
+                    {
+                        $dest_snaps[] = ResourcesService::AttachmentPathViewHandle($nap);
+                    }
+                    $v['snaps'] = $dest_snaps;
+                }
                 
                 // 订单详情
                 if($is_items == 1)

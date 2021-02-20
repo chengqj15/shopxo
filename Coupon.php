@@ -127,16 +127,6 @@ class Coupon extends Common
         $data['images'] = $images;
         $data['coupon_barcode'] = $coupon_data['coupon_code'];
         // $data['msg'] = '请向收银员出示此核销码';
-        $current = date('Y-m-d');
-        // 有效时间
-        $data['time_start_text'] = date('Y-m-d', $data['time_start']);
-        $data['time_end_text'] = date('Y-m-d', $data['time_end']);
-        if($data['time_start_text'] > $current || $data['time_end_text'] < $current)
-        {
-            $data['in_use_period'] = '0';
-        }else{
-            $data['in_use_period'] = '1';
-        }
         $data['msg'] = '';
         return DataReturn('success', 0, $data); 
     }

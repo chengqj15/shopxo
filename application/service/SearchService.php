@@ -85,7 +85,7 @@ class SearchService
         }
 
         // 分类id
-        if(!empty($params['category_id']))
+        if(!empty($params['category_id']) && $params['category_id'] != 0)
         {
             $category_ids = GoodsService::GoodsCategoryItemsIds([$params['category_id']], 1);
             $category_ids[] = $params['category_id'];
@@ -119,11 +119,21 @@ class SearchService
         {
             // 排序
             $order_by = '';
-            if(!empty($params['order_by_field']) && !empty($params['order_by_type']) && $params['order_by_field'] != 'default')
+            if(empty($params['order_by_type'])){
+                $params['order_by_type'] = 'desc';
+            }
+            if(!empty($params['order_by_field']) && $params['order_by_field'] != 'default')
             {
-                $order_by = 'g.'.$params['order_by_field'].' '.$params['order_by_type'];
+                if($params['order_by_field'] == 'access_count'){
+                    // $order_by = 'g.is_hot ' . $params['order_by_type'] . ' g.'.$params['order_by_field'].' '.$params['order_by_type'];
+                    $order_by = 'g.is_hot ' . $params['order_by_type'] . ', g.brand_id asc, g.upd_time ' . $params['order_by_type'];
+                }elseif ($params['order_by_field'] == 'upd_time') {
+                    $order_by = 'g.is_new ' . $params['order_by_type'] . ', g.brand_id asc, g.upd_time ' . $params['order_by_type'];
+                }else{
+                    $order_by = 'g.'.$params['order_by_field'].' '.$params['order_by_type'];
+                }
             } else {
-                $order_by = 'g.access_count desc, g.sales_count desc';
+                $order_by = 'g.brand_id asc, g.upd_time desc';
             }
             
             // 分页计算

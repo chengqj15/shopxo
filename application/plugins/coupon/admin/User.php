@@ -132,5 +132,27 @@ class User extends Controller
         // 优惠劵保存
         return UserCouponAdminService::UserCouponVerify($params);
     }
+
+    /**
+     * 优惠劵过期提醒
+     * @author   Devil
+     * @blog     http://gong.gg/
+     * @version  1.0.0
+     * @datetime 2019-08-05T08:21:54+0800
+     * @param    [array]          $params [输入参数]
+     */
+    public function notice($params = [])
+    {
+        // 是否ajax请求
+        if(!IS_AJAX)
+        {
+            return $this->error('非法访问');
+        }
+
+        $params = ['id' => $params['id']];
+
+        // 优惠劵保存
+        return CouponService::CouponExpireNotice($params);
+    }
 }
 ?>

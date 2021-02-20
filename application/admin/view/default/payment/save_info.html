@@ -36,6 +36,25 @@
 				<div class="plug-file-upload-submit" data-view-tag="ul.logo-images-view">+上传图片</div>
 			</div>
 
+			<div class="am-form-group am-form-file">
+				<label class="block">图片介绍</label>
+				<ul class="plug-file-upload-view display-images-view" data-form-name="display_img" data-max-number="1" data-dialog-type="images">
+					{{if !empty($data['display_img'])}}
+						<li>
+							<input type="text" name="display_img" value="{{$data.display_img}}" />
+							<img src="{{$data.display_img}}" />
+							<i>×</i>
+						</li>
+					{{/if}}
+				</ul>
+				<div class="plug-file-upload-submit" data-view-tag="ul.display-images-view">+上传图片</div>
+				<div>
+					<label class="block"><span class="am-form-group-label-tips">页面描述</span></label>
+					<textarea class="am-radius" name="display_msg">{{$data.display_msg|raw}}</textarea>
+				</div>
+				
+			</div>
+
 			<!-- plugins config start -->
 			{{if !empty($data['element'])}}
 				<div class="am-alert am-alert-secondary">

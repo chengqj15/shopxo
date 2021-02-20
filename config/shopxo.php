@@ -71,7 +71,7 @@ return [
     ],
 
     // 线下支付方式
-    'under_line_list'                       => ['CashPayment', 'DeliveryPayment'],
+    'under_line_list'                       => ['CashPayment', 'DeliveryPayment', 'TransferPay', 'SuperPayTransferPay'],
 
     // 小程序平台
     'mini_app_type_list'                    => ['weixin', 'alipay', 'baidu', 'toutiao', 'qq'],

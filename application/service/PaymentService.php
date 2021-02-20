@@ -187,18 +187,33 @@ class PaymentService
             $where['is_open_user'] = intval($params['is_open_user']);
         }
 
-        $data = Db::name('Payment')->where($where)->field('id,logo,name,sort,payment,config,apply_terminal,apply_terminal,element,is_enable,is_open_user')->order('sort asc')->select();
-        if(!empty($data) && is_array($data))
+        if(isset($params['simple']) && $params['simple'] == 1)
         {
-            foreach($data as &$v)
+            $data = Db::name('Payment')->where($where)->field('id,name,sort,payment,apply_terminal,display_img,display_msg')->order('sort asc')->select();
+            if(!empty($data) && is_array($data))
             {
-                $v['logo_old'] = $v['logo'];
-                $v['logo'] = ResourcesService::AttachmentPathViewHandle($v['logo']);
-                $v['element'] = empty($v['element']) ? '' : json_decode($v['element'], true);
-                $v['config'] = empty($v['config']) ? '' : json_decode($v['config'], true);
-                $v['apply_terminal'] = empty($v['apply_terminal']) ? '' : json_decode($v['apply_terminal'], true);
+                foreach($data as &$v)
+                {
+                    $v['apply_terminal'] = empty($v['apply_terminal']) ? '' : json_decode($v['apply_terminal'], true);
+                    $v['display_img'] = ResourcesService::AttachmentPathViewHandle($v['display_img']);
+                    $v['display_msg'] = ResourcesService::ApMiniRichTextContentHandle($v['display_msg']);
+                }
+            }
+        }else{
+            $data = Db::name('Payment')->where($where)->field('id,logo,name,sort,payment,config,apply_terminal,element,is_enable,is_open_user,display_img,display_msg')->order('sort asc')->select();
+            if(!empty($data) && is_array($data))
+            {
+                foreach($data as &$v)
+                {
+                    $v['logo_old'] = $v['logo'];
+                    $v['logo'] = ResourcesService::AttachmentPathViewHandle($v['logo']);
+                    $v['element'] = empty($v['element']) ? '' : json_decode($v['element'], true);
+                    $v['config'] = empty($v['config']) ? '' : json_decode($v['config'], true);
+                    $v['apply_terminal'] = empty($v['apply_terminal']) ? '' : json_decode($v['apply_terminal'], true);
+                }
             }
         }
+
         return $data;
     }
 
@@ -213,6 +228,7 @@ class PaymentService
      */
     public static function BuyPaymentList($params = [])
     {
+        $params['simple'] = 1;
         $data = self::PaymentList($params);
 
         $result = [];
@@ -287,7 +303,7 @@ class PaymentService
         }
 
         // 附件
-        $data_fields = ['logo'];
+        $data_fields = ['logo', 'display_img'];
         $attachment = ResourcesService::AttachmentParams($params, $data_fields);
 
         // 数据
@@ -295,6 +311,8 @@ class PaymentService
             'name'              => $params['name'],
             'apply_terminal'    => empty($params['apply_terminal']) ? '' : json_encode(explode(',', $params['apply_terminal'])),
             'logo'              => $attachment['data']['logo'],
+            'display_img'       => $attachment['data']['display_img'],
+            'display_msg'       => htmlspecialchars_decode($params['display_msg']),
             'config'            => json_encode(self::GetPlugConfig($params)),
             'sort'              => intval($params['sort']),
             'is_enable'         => isset($params['is_enable']) ? intval($params['is_enable']) : 0,

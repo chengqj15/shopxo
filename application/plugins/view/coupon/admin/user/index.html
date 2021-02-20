@@ -228,6 +228,9 @@
                                     {{if $v['is_use'] eq 0}}
                                     <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-edit submit-ajax" data-view="reload" data-msg="核销后无法恢复，确定继续吗？" data-url="{{:PluginsAdminUrl('coupon', 'user', 'verify')}}" data-id="{{$v.id}}"> 核销</button>
                                     {{/if}}
+                                    {{if $v['is_use'] eq 0}}
+                                    <button class="am-btn am-btn-secondary am-btn-xs am-radius am-icon-edit submit-ajax" data-view="reload" data-msg="确定要发送提醒吗？" data-url="{{:PluginsAdminUrl('coupon', 'user', 'notice')}}" data-id="{{$v.id}}"> 提醒</button>
+                                    {{/if}}
                                     <button class="am-btn am-btn-danger am-btn-xs am-radius am-icon-trash-o submit-delete" data-url="{{:PluginsAdminUrl('coupon', 'user', 'delete')}}" data-id="{{$v.id}}"> 删除</button>
                                 </td>
                             </tr>

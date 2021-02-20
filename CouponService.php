@@ -191,7 +191,6 @@ class CouponService
                 $use_value_ids = json_encode(explode(',', $params['goods_ids']));
             }
         }
-        $is_repeat = isset($params['is_repeat']) ? intval($params['is_repeat']) : 0;
 
         // 数据
         $data = [
@@ -202,7 +201,6 @@ class CouponService
             'is_user_receive'   => isset($params['is_user_receive']) ? intval($params['is_user_receive']) : 0,
             'is_regster_send'   => isset($params['is_regster_send']) ? intval($params['is_regster_send']) : 0,
             'is_enable'         => isset($params['is_enable']) ? intval($params['is_enable']) : 0,
-            'use_count_limit'   => $is_repeat == 1 ? -1 : 1
         ];
 
         // 非编辑或者已发放数量为0则需要校验核心数据
@@ -314,7 +312,7 @@ class CouponService
                             $v['is_operable_name'] = '已购买';
                         }
                     }
-                }
+		}
 
                 // 是否已过期
                 if($v['is_operable'] == 1 && isset($v['expire_type']) && $v['expire_type'] == 1 && isset($v['fixed_time_end']) && date('Y-m-d', $v['fixed_time_end']) < date('Y-m-d', time()))

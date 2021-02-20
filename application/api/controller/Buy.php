@@ -58,9 +58,13 @@ class Buy extends Common
         // 商品校验
         if(isset($ret['code']) && $ret['code'] == 0)
         {
-            // 支付方式
-            $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1, 'is_open_user'=>1]);
-
+            if(isset($params['test_mode']) && $params['test_mode'] == 1){
+                // 支付方式
+                $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1]);
+            }else{
+                $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1, 'is_open_user'=>1]);
+            }
+            
             // 当前选中的优惠劵
             $coupon_id = isset($params['coupon_id']) ? intval($params['coupon_id']) : 0;
 
@@ -87,6 +91,65 @@ class Buy extends Common
             // 提货配置
             $result['common_self_extraction_days'] = MyC('common_self_extraction_days', 1, true);
             $result['common_self_extraction_hours'] = MyC('common_self_extraction_hours', '11:00 - 13:00, 17:00 - 19:00, 21:00 - 22:00', true);
+            $day_array = [];
+            $today_hour_array = [];
+            $hour_array = [];
+            $extraction_config = MyC('common_self_extraction_config');
+            $extraction_config = str_replace('&quot;', '"', $extraction_config);
+            // $result['extraction_config'] = $extraction_config;
+            if(!empty($extraction_config)){
+                $extraction = json_decode($extraction_config, true);
+            }else{
+                $extraction = [
+                    'Sun' => '',
+                    'Mon' => '10:00 - 13:00, 17:00 - 19:00, 21:00 - 22:00',
+                    'Tues' => '10:00 - 13:00, 17:00 - 19:00, 21:00 - 22:00',
+                    'Wed' => '10:00 - 13:00, 17:00 - 19:00, 21:00 - 22:00',
+                    'Thur' => '',
+                    'Fri' => '11:00 - 13:00, 17:00 - 19:00, 21:00 - 22:00',
+                    'Sat' => '',
+                ];
+            }
+            $weekarray = array('Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat');
+            $weekday = date('w');
+            $currentHours = date('H:i');
+            $i=0; 
+            $count = 0;
+            while($i<$result['common_self_extraction_days'] && $count<7){
+                $weekday = $weekday % 7;
+                $hour_config = $extraction[$weekarray[$weekday]];
+                $weekday++;
+
+                if(!empty($hour_config)){
+                    $hours = explode(",", $hour_config);
+                    if($count == 0){
+                        //current day
+                        for ($k = 0; $k < count($hours); $k++) {
+                            $hour_set = explode("-", $hours[$k]);
+                            if(!empty($hour_set) && count($hour_set) >1){
+                              $time_end = trim($hour_set[1]);
+                              if($time_end > $currentHours){
+                                $today_hour_array[] = $hours[$k];
+                              }
+                            }
+                        }
+                        if(!empty($today_hour_array)){
+                            $day_array[] = 'today';
+                            $i++;
+                            $hour_array['today'] = $today_hour_array;
+                        } 
+                    }else{
+                        $i++;
+                        $key = date('Y-m-d', strtotime('+'. $count.' day'));
+                        $day_array[] = $key;
+                        $hour_array[$key] = $hours;
+                    }
+                }
+                $count++;
+            } 
+            $result['day_array'] = $day_array;
+            $result['hour_array'] = $hour_array;
+
             $result['out_of_stock_type_list']       = lang('out_of_stock_type_list');
 
 

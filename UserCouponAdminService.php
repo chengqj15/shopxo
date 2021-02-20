@@ -268,23 +268,15 @@ class UserCouponAdminService
         if($data['is_use'] == 1){
             return DataReturn('the coupon already used.', -1); 
         }
-        $coupon = Db::name('PluginsCoupon')->find($data['coupon_id']);
-        
-        $status = false;                
-        if((!empty($coupon) && $coupon['use_count_limit'] == -1) || $data['use_count_limit'] == -1){
-            //可重复使用
-            $status = Db::name('PluginsCouponUser')->where($where)->update(
-                ['use_count' => Db::raw('use_count+1'), 'upd_time'  => time()]);
-        }else{
-            $data = [
-                'is_use'    => 1,
-                'upd_time'  => time(),
-                'use_time'  => time(),
-                'use_order_id' => 0,
-            ];
-            $status = Db::name('PluginsCouponUser')->where($where)->update($data);
-        }
-        if($status){
+
+        $data = [
+            'is_use'    => 1,
+            'upd_time'  => time(),
+            'use_time'  => time(),
+            'use_order_id' => 0,
+        ];
+        if(Db::name('PluginsCouponUser')->where($where)->update($data))
+        {
             return DataReturn('verify success', 0);
         }
         return DataReturn('verify fail', -1);

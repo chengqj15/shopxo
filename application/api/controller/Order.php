@@ -78,7 +78,12 @@ class Order extends Common
         $data = OrderService::OrderList($data_params);
 
         // 支付方式
-        $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1, 'is_open_user'=>1]);
+        if(isset($params['test_mode']) && $params['test_mode'] == 1){
+            // 支付方式
+            $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1]);
+        }else{
+            $payment_list = PaymentService::BuyPaymentList(['is_enable'=>1, 'is_open_user'=>1]);
+        }
 
         // 返回数据
         $result = [

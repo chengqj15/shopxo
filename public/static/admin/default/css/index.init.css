@@ -158,6 +158,14 @@ html, body {
 }
 
 /**
+ * 订单金额
+ */
+#echarts-order-amount-trend {
+    margin-top: 10px;
+    height: 400px;
+}
+
+/**
  * 系统信息
  */
 .dl-content {

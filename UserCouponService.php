@@ -71,7 +71,6 @@ class UserCouponService
         $data = Db::name('PluginsCouponUser')->field($field)->where($where)->order($order_by)->select();
         if(!empty($data))
         {
-            $current = date('Y-m-d');
             $common_is_whether_list = BaseService::$common_is_whether_list;
             $coupons = [];
             foreach($data as $v)
@@ -98,12 +97,6 @@ class UserCouponService
                 // 有效时间
                 $v['time_start_text'] = date('Y-m-d', $v['time_start']);
                 $v['time_end_text'] = date('Y-m-d', $v['time_end']);
-                if($v['time_start_text'] > $current || $v['time_end_text'] < $current)
-                {
-                    $v['in_use_period'] = '0';
-                }else{
-                    $v['in_use_period'] = '1';
-                }
 
                 // 时间
                 $v['add_time_time'] = empty($v['add_time']) ? '' : date('Y-m-d H:i:s', $v['add_time']);
@@ -236,40 +229,23 @@ class UserCouponService
                 {
                     if(isset($ext['business']) && $ext['business'] == 'plugins-coupon' && !empty($ext['ext']) && !empty($ext['ext']['id']))
                     {
-                        $coupon = [];
-                        $couponUser = Db::name('PluginsCouponUser')->where(['id'=>intval($ext['ext']['id'])])->find();
-                        if(!empty($couponUser)){
-                            $coupon = Db::name('PluginsCoupon')->find($couponUser['coupon_id']);
+                        $data = [
+                            'is_use'    => $status,
+                            'upd_time'  => time(),
+                        ];
+                        if($status == 1)
+                        {
+                            $data['use_time'] = time();
+                            $data['use_order_id'] = $use_order_id;
+                        } else {
+                            $data['use_time'] = 0;
+                            $data['use_order_id'] = 0;
                         }
-                        if((!empty($coupon) && $coupon['use_count_limit'] == -1) || $couponUser['use_count_limit'] == -1){
-                            //可重复使用
-                            $update_ret = Db::name('PluginsCouponUser')->where('id', intval($ext['ext']['id']))->update(
-                                ['use_count' => Db::raw('use_count+1'), 'upd_time'  => time()]);
-                            if($update_ret){
-                                $success++;
-                            }else{
-                                $fail++;
-                            }
-                        }else{
-                            $data = [
-                                'is_use'    => $status,
-                                'upd_time'  => time(),
-                            ];
-                            if($status == 1)
-                            {
-                                $data['use_time'] = time();
-                                $data['use_order_id'] = $use_order_id;
-                            } else {
-                                $data['use_time'] = 0;
-                                $data['use_order_id'] = 0;
-                            }
-                            if(Db::name('PluginsCouponUser')->where(['id'=>intval($ext['ext']['id'])])->update($data))
-                            {
-                                $success++;
-                            }else{
-                                $fail++;
-                            }
+                        if(Db::name('PluginsCouponUser')->where(['id'=>intval($ext['ext']['id'])])->update($data))
+                        {
+                            $success++;
                         }
+                        $fail++;
                     }
                 }
             }

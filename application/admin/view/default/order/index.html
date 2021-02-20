@@ -227,6 +227,9 @@
 									<span class="block am-text-warning am-text-xs">用户已删除</span>
 								{{/if}}
                                 <span class="block am-text-danger am-text-xs">({{$v['out_of_stock_type']}})</span>
+                                {{if !empty($v.snaps)}}
+                                <span class="block am-text-danger am-text-xs">请注意核对转账截图</span>
+                                {{/if}}
 							</td>
 							<td>
 								金额：{{$v.price}}<br />
@@ -405,6 +408,15 @@
 
 												<dt>支付方式</dt>
 												<dd>{{if empty($v['payment_name'])}}<span class="cr-ddd">未填写</span>{{else /}}{{$v.payment_name}}{{/if}}</dd>
+
+                                                {{if !empty($v['snaps'])}}
+                                                <dt>支付截图</dt>
+                                                <dd><p class="am-margin-top-xs">
+                                                    {{foreach $v.snaps as $snap}}
+                                                        <img class="am-img-thumbnail" src="{{$snap}}" alt="截图" />
+                                                    {{/foreach}}
+                                                </p></dd>
+                                                {{/if}}
 
 												<dt>用户备注</dt>
 												<dd>{{if empty($v['user_note'])}}<span class="cr-ddd">未填写</span>{{else /}}{{$v.user_note}}{{/if}}</dd>
