@@ -42,6 +42,7 @@ alter table s_plugins_coupon_user add column `use_count` int(11) NOT NULL DEFAUL
 
 alter table s_plugins_coupon add column `coupon_code` varchar(20) NOT NULL DEFAULT '0' COMMENT '优惠券序列号' after `id`;
 alter table s_plugins_coupon add UNIQUE index `coupon_code`(`coupon_code`);
+alter table s_plugins_coupon add column `is_popup` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否弹窗（0否，1是）' after `is_regster_send`;
 
 # 用户优惠劵表
 CREATE TABLE IF NOT EXISTS `{PREFIX}plugins_coupon_user` (

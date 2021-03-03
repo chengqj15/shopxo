@@ -271,6 +271,7 @@ class CouponService
         $order_by = empty($params['order_by']) ? 'sort asc,id desc' : $params['order_by'];
         $is_handle = isset($params['is_handle']) ? intval($params['is_handle']) : 1;
         $is_sure_receive = isset($params['is_sure_receive']) ? intval($params['is_sure_receive']) : 0;
+        $filter_not_available = isset($params['filter_not_available']) ? intval($params['filter_not_available']) : 0;
 
         // 获取数据列表
         $data = Db::name('PluginsCoupon')->field($field)->where($where)->limit($m, $n)->order($order_by)->select();
@@ -319,6 +320,10 @@ class CouponService
                 // 是否已过期
                 if($v['is_operable'] == 1 && isset($v['expire_type']) && $v['expire_type'] == 1 && isset($v['fixed_time_end']) && date('Y-m-d', $v['fixed_time_end']) < date('Y-m-d', time()))
                 {
+                    if($filter_not_available == 1){
+                        unset($v);
+                        continue;
+                    }
                     $v['is_operable'] = 0;
                     $v['is_operable_name'] = '已过期';
                 }
@@ -326,6 +331,10 @@ class CouponService
                 // 是否超限
                 if($v['is_operable'] == 1 && isset($v['limit_send_count']) && isset($v['already_send_count']) && $v['limit_send_count'] > 0 && $v['limit_send_count'] <= $v['already_send_count'])
                 {
+                    if($filter_not_available == 1){
+                        unset($v);
+                        continue;
+                    }
                     $v['is_operable'] = 0;
                     $v['is_operable_name'] = '已领光';
                 }
@@ -461,6 +470,10 @@ class CouponService
             if(isset($params['is_enable']) && $params['is_enable'] > -1)
             {
                 $where[] = ['is_enable', '=', $params['is_enable']];
+            }
+            if(isset($params['is_popup']) && $params['is_popup'] > -1)
+            {
+                $where[] = ['is_popup', '=', $params['is_popup']];
             }
             if(isset($params['is_user_receive']) && $params['is_user_receive'] > -1)
             {

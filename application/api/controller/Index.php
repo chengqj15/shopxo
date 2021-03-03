@@ -15,6 +15,8 @@ use app\service\BannerService;
 use app\service\AppHomeNavService;
 use app\service\PluginsService;
 use app\service\BuyService;
+use app\plugins\coupon\service\CouponService;
+use app\plugins\coupon\service\BaseService;
 
 /**
  * 首页
@@ -79,8 +81,51 @@ class Index extends Common
             }
 		}
 
+		// 首页弹窗
+
+        
+
 		// 返回数据
 		return DataReturn('success', 0, $result);
+	}
+
+	private function fetchPopupContent($popupver)
+	{
+		// 是否关闭状态
+		$ret = DataReturn('success', -1, '');
+        if(session('plugins_popupscreen_close_status') == 1)
+        {
+            return $ret;
+        }else{
+        	// 基础配置是否正常
+	        $base = PluginsService::PluginsData('popupscreen', ['images']);
+	        if($base['code'] != 0)
+	        {
+	            return $ret;
+	        }
+	        if($base['data']['popupver'] <= $popupver){
+	        	return $ret;
+	        }
+	        // 有效时间
+	        $current = date('Y-m-d', time());
+	        if(!empty($base['data']['time_start']))
+	        {
+	            // 是否已开始
+	            if(date('Y-m-d', strtotime($base['data']['time_start'])) > $current)
+	            {
+	                return $ret;
+	            }
+	        }
+	        if(!empty($base['data']['time_end']))
+	        {
+	            // 是否已结束
+	            if(date('Y-m-d', strtotime($base['data']['time_end'])) < $current)
+	            {
+	                return $ret;
+	            }
+	        }
+	        return DataReturn('success', 0, $base['data']);
+        }
 	}
 
 	/**
@@ -141,6 +186,44 @@ class Index extends Common
         $category = GoodsService::GoodsCategoryApiIndex($params);
         $result['category'] = $category;
 
+        //弹窗
+        $query_params = $this->data_post;
+        $popupver = isset($query_params['popupver']) ? $query_params['popupver'] : 0;
+        $popupret = $this->fetchPopupContent($popupver);
+        if($popupret['code'] == 0)
+        {
+        	$data = $popupret['data'];
+        	$popup_data = [
+        		'title' => $data['title'],
+        		'popup_type' => $data['popup_type'],
+        		'content' => $data['content'],
+        		'button_text' => $data['button_text'],
+        		'popop_url' => $data['url'],
+        		'popupver' => $data['popupver']
+        	];
+        	if($data['popup_type'] == 0){
+        		//获取弹窗优惠券列表
+        		// 优惠劵列表
+		        $coupon_params = [
+		            'where'             => [
+		                'is_enable'         => 1,
+		                'is_user_receive'   => 1,
+		                'is_popup'	=> 1,
+		            ],
+		            'm'                 => 0,
+		            'n'                 => 5,
+		            'is_sure_receive'   => 1,
+		            'filter_not_available' => 1,
+		            'user'              => $this->user,
+		        ];
+        		$ret = CouponService::CouponList($coupon_params);
+        		$popup_data['coupon_list'] = $ret['data'];
+        		// 获取基础配置信息
+        		$base = BaseService::BaseConfig();
+        		$popup_data['coupon_base'] = $base['data'];
+        	}
+            $result['plugins_popup_data'] = $popup_data;
+        }
 		// 返回数据
 		return DataReturn('success', 0, $result);
 	}

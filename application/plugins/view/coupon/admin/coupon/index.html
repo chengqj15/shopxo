@@ -44,12 +44,12 @@
                                 </select>
                             </td>
                             <td>
-                                <span>颜色：</span>
-                                <select name="bg_color" class="chosen-select" data-placeholder="背景颜色...">
-                                    <option value="-1">背景颜色...</option>
-                                    {{if !empty($coupon_bg_color_list)}}
-                                        {{foreach $coupon_bg_color_list as $v}}
-                                            <option value="{{$v.value}}" {{if isset($params['bg_color']) and $params['bg_color'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
+                                <span>弹窗：</span>
+                                <select name="is_popup" class="chosen-select" data-placeholder="背景颜色...">
+                                    <option value="-1">是否弹窗...</option>
+                                    {{if !empty($common_is_whether_list)}}
+                                        {{foreach $common_is_whether_list as $v}}
+                                            <option value="{{$v.value}}" {{if isset($params['is_popup']) and $params['is_popup'] eq $v['value']}}selected{{/if}}>{{$v.name}}</option>
                                         {{/foreach}}
                                     {{/if}}
                                 </select>
@@ -150,6 +150,7 @@
                         <th class="am-hide-sm-only">是否启用</th>
                         <th class="am-hide-md-down">开放领取</th>
                         <th class="am-hide-md-down">注册发放</th>
+                        <th class="am-hide-md-down">是否弹窗</th>
                         <th>更多</th>
                         <th class="th-operation">操作</th>
                     </tr>
@@ -203,6 +204,9 @@
                                 </td>
                                 <td class="am-hide-md-down">
                                     <a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_regster_send'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:PluginsAdminUrl('coupon', 'coupon', 'statusupdate')}}" data-id="{{$v.id}}" data-state="{{$v['is_regster_send']}}" data-field="is_regster_send"></a>
+                                </td>
+                                <td class="am-hide-md-down">
+                                    <a href="javascript:;" class="am-icon-btn am-icon-check submit-state {{if $v['is_popup'] eq 1}}am-success{{else /}}am-default{{/if}}" data-url="{{:PluginsAdminUrl('coupon', 'coupon', 'statusupdate')}}" data-id="{{$v.id}}" data-state="{{$v['is_popup']}}" data-field="is_popup"></a>
                                 </td>
                                 <td>
                                     <span class="am-icon-caret-down c-p" data-am-modal="{target: '#my-popup{{$v.id}}'}"> 查看更多</span>
